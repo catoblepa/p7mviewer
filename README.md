@@ -61,6 +61,27 @@ cd src
 python3 p7mviewer.py [file.p7m]
 ```
 
+
+## Drag & Drop e permessi Flatpak
+
+**Nota:** Se usi l'applicazione tramite Flatpak, il drag and drop di file dalla tua home directory o da altre cartelle utente potrebbe non funzionare a meno che l'app non abbia i permessi necessari per accedere ai file dell'utente.
+
+Per abilitare il drag and drop di file dalla home, puoi:
+
+- Avviare l'app con il permesso aggiuntivo:
+
+  ```bash
+  flatpak override --user --filesystem=home io.github.catoblepa.p7mviewer
+  ```
+
+- Oppure, per una singola cartella (es. Documenti):
+
+  ```bash
+  flatpak override --user --filesystem=xdg-documents io.github.catoblepa.p7mviewer
+  ```
+
+In alternativa, puoi sempre usare il selettore file integrato, che funziona anche senza permessi aggiuntivi grazie ai portali Flatpak.
+
 ## Debug
 
 Per abilitare la modalità debug ed ottenere output dettagliati nel terminale, imposta la variabile d'ambiente `P7MVIEWER_DEBUG`:

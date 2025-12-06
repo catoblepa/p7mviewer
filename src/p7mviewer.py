@@ -4,7 +4,7 @@
 
 import gi
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, GLib, Gio
+from gi.repository import Gtk, GLib, Gio, Gdk
 import subprocess
 import os
 import sys
@@ -153,9 +153,49 @@ class FirmeWindow(Gtk.ApplicationWindow):
 
         self.aggiorna_ui()
 
+        # --- Drag and Drop support per GTK4 ---
+        debug_print("[DEBUG] Inizializzo DropTarget per drag and drop")
+        drop_target = Gtk.DropTarget.new(str, Gdk.DragAction.COPY)
+        drop_target.set_gtypes([str])
+        drop_target.connect("drop", self.on_file_drop)
+        self.add_controller(drop_target)
+
         if file_p7m:
             debug_print(f"[DEBUG] File passato all'avvio: {file_p7m}")
             self.verifica_firma(file_p7m)
+
+    def on_file_drop(self, drop_target, value, x, y):
+        debug_print(f"[DEBUG] Evento drop ricevuto: value={value!r} (type={type(value)})")
+        if not value:
+            debug_print("[DEBUG] Nessun valore ricevuto nel drop")
+            return False
+        
+        uris = value.strip().splitlines()
+        debug_print(f"[DEBUG] URIs estratte dal drop: {uris}")
+        
+        for uri in uris:
+            # Accetta sia file:// URI che percorsi assoluti
+            if uri.startswith("file://"):
+                file_path = GLib.filename_from_uri(uri)[0]
+            else:
+                file_path = uri
+            
+            debug_print(f"[DEBUG] file_path estratto: {file_path}")
+            
+            if not os.access(file_path, os.R_OK):
+                debug_print(f"[DEBUG] File non accessibile: {file_path}")
+                self.file_verificato = True
+                self.aggiorna_ui()
+                self.label_info_file.set_markup('<span size="small" color="#c62828">❌ Errore apertura file: File non accessibile</span>')
+                self.status_badge.set_markup('<span size="small" bgcolor="#ffebee" color="#c62828"> ❌ Errore: File non accessibile </span>')
+                self.status_badge.set_visible(True)
+                return True
+            
+            self.pulisci_sezioni()
+            self.verifica_firma(file_path)
+            return True
+        
+        return False
 
     def aggiorna_ui(self):
         debug_print(f"[DEBUG] aggiorna_ui chiamato, file_verificato={self.file_verificato}")
