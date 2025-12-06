@@ -58,7 +58,7 @@ pip install asn1crypto
 
 # Esegui l'applicazione
 cd src
-python3 firme.py [file.p7m]
+python3 p7mviewer.py [file.p7m]
 ```
 
 ## Licenza

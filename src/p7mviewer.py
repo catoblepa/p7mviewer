@@ -13,7 +13,7 @@ import io
 import contextlib
 from pathlib import Path
 
-from estrai_firme import analizza_busta
+from signature_parser import analizza_busta
 
 # Debug mode: controllabile via variabile d'ambiente P7MVIEWER_DEBUG=true
 DEBUG = os.getenv('P7MVIEWER_DEBUG', 'false').lower() in ('true', '1', 'yes')

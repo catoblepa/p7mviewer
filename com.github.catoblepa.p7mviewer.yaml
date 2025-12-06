@@ -2,7 +2,7 @@ app-id: com.github.catoblepa.p7mviewer
 runtime: org.gnome.Platform
 runtime-version: '49'
 sdk: org.gnome.Sdk
-command: firme.py
+command: p7mviewer.py
 finish-args:
   - --share=network
   - --filesystem=host
@@ -23,15 +23,15 @@ modules:
   - name: app
     buildsystem: simple
     build-commands:
-      - install -Dm755 firme.py /app/bin/firme.py
-      - install -Dm644 estrai_firme.py /app/bin/estrai_firme.py
+      - install -Dm755 p7mviewer.py /app/bin/p7mviewer.py
+      - install -Dm644 signature_parser.py /app/bin/signature_parser.py
       - install -Dm644 com.github.catoblepa.p7mviewer.svg /app/share/icons/hicolor/scalable/apps/com.github.catoblepa.p7mviewer.svg
       - install -Dm644 com.github.catoblepa.p7mviewer.desktop /app/share/applications/com.github.catoblepa.p7mviewer.desktop
     sources:
       - type: file
-        path: src/firme.py
+        path: src/p7mviewer.py
       - type: file
-        path: src/estrai_firme.py
+        path: src/signature_parser.py
       - type: file
         path: src/com.github.catoblepa.p7mviewer.svg
       - type: file
