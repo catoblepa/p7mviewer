@@ -4,12 +4,11 @@ runtime-version: '49'
 sdk: org.gnome.Sdk
 command: p7mviewer.py
 finish-args:
-  - --share=network
-  - --filesystem=host
-  - --filesystem=/tmp
   - --socket=x11
   - --socket=wayland
   - --device=dri
+  - --filesystem=xdg-run/gvfsd
+  - --talk-name=org.gtk.vfs.*
   - --env=GDK_BACKEND=x11,wayland
 modules:
   - name: asn1crypto
