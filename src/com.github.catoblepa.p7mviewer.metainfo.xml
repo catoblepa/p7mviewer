@@ -36,8 +36,8 @@
   
   <launchable type="desktop-id">com.github.catoblepa.p7mviewer.desktop</launchable>
   
-  <url type="homepage">https://github.com/catoblepa/firme</url>
-  <url type="bugtracker">https://github.com/catoblepa/firme/issues</url>
+  <url type="homepage">https://github.com/catoblepa/p7mviewer</url>
+  <url type="bugtracker">https://github.com/catoblepa/p7mviewer/issues</url>
   
   <developer id="org.catoblepa">
     <name>Davide Truffa</name>
@@ -55,12 +55,12 @@
     <screenshot type="default">
       <caption>Main window showing signature verification</caption>
       <caption xml:lang="it">Finestra principale con verifica delle firme</caption>
-      <image>https://raw.githubusercontent.com/catoblepa/firme/main/screenshots/main-window.png</image>
+      <image>https://raw.githubusercontent.com/catoblepa/p7mviewer/main/screenshots/main-window.png</image>
     </screenshot>
     <screenshot>
       <caption>Signature details with expandable information</caption>
       <caption xml:lang="it">Dettagli firma con informazioni espandibili</caption>
-      <image>https://raw.githubusercontent.com/catoblepa/firme/main/screenshots/signature-details.png</image>
+      <image>https://raw.githubusercontent.com/catoblepa/p7mviewer/main/screenshots/signature-details.png</image>
     </screenshot>
   </screenshots>
   
