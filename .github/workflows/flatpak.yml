@@ -3,6 +3,8 @@ name: Build Flatpak
 on:
   push:
     branches: [ main ]
+    tags:
+      - 'v*'
   pull_request:
 
 jobs:
@@ -27,8 +29,16 @@ jobs:
           manifest-path: com.github.catoblepa.p7mviewer.yaml
           bundle: com.github.catoblepa.p7mviewer.flatpak
 
-      # - name: Upload Flatpak bundle
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: p7mviewer-flatpak
-      #     path: com.github.catoblepa.p7mviewer.flatpak
+      - name: Upload Flatpak bundle as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: p7mviewer-flatpak
+          path: com.github.catoblepa.p7mviewer.flatpak
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: com.github.catoblepa.p7mviewer.flatpak
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
