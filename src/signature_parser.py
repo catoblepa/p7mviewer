@@ -100,37 +100,37 @@ def mostra_info_firma(signer, cert_list):
         not_before = validity['not_before'].native
         not_after = validity['not_after'].native
         
-        info['Identità'] = estrai_nome_cognome(subject)
-        info['Codice Fiscale'] = estrai_codice_fiscale(subject)
-        info['Organizzazione'] = estrai_organization(subject)
-        info['Validità dal'] = not_before.strftime('%d/%m/%Y %H:%M:%S') if isinstance(not_before, datetime) else str(not_before)
-        info['Validità al'] = not_after.strftime('%d/%m/%Y %H:%M:%S') if isinstance(not_after, datetime) else str(not_after)
-        info['Certificato emesso da'] = cert.issuer.human_friendly
+        info['Identity'] = estrai_nome_cognome(subject)
+        info['Tax Code'] = estrai_codice_fiscale(subject)
+        info['Organization'] = estrai_organization(subject)
+        info['Valid from'] = not_before.strftime('%d/%m/%Y %H:%M:%S') if isinstance(not_before, datetime) else str(not_before)
+        info['Valid until'] = not_after.strftime('%d/%m/%Y %H:%M:%S') if isinstance(not_after, datetime) else str(not_after)
+        info['Certificate issued by'] = cert.issuer.human_friendly
         
         # Verifica se il certificato è scaduto
         now = datetime.now(not_after.tzinfo) if hasattr(not_after, 'tzinfo') and not_after.tzinfo else datetime.now()
         if now > not_after:
-            info['Stato certificato'] = '⚠️ Scaduto'
+            info['Certificate status'] = '⚠️ Expired'
         elif now < not_before:
-            info['Stato certificato'] = '⚠️ Non ancora valido'
+            info['Certificate status'] = '⚠️ Not yet valid'
         else:
-            info['Stato certificato'] = '✓ Valido'
+            info['Certificate status'] = '✓ Valid'
     else:
-        info['Errore'] = "Certificato non trovato per questa firma."
+        info['Error'] = "Certificate not found for this signature."
     
     # Estrai data e ora della firma (signing time)
     if 'signed_attrs' in signer and signer['signed_attrs'] is not None:
         for attr in signer['signed_attrs']:
             if attr['type'].native == 'signing_time':
                 signing_time = attr['values'].native[0]
-                info['Data e ora firma'] = signing_time.strftime('%d/%m/%Y %H:%M:%S') if isinstance(signing_time, datetime) else str(signing_time)
+                info['Signature date and time'] = signing_time.strftime('%d/%m/%Y %H:%M:%S') if isinstance(signing_time, datetime) else str(signing_time)
                 
                 # Verifica se la firma era valida al momento della sottoscrizione
                 if cert and isinstance(signing_time, datetime) and isinstance(not_before, datetime) and isinstance(not_after, datetime):
                     if not_before <= signing_time <= not_after:
-                        info['Firma valida al momento'] = '✓ Sì'
+                        info['Signature valid at signing time'] = '✓ Yes'
                     else:
-                        info['Firma valida al momento'] = '✗ No (certificato non valido alla data di firma)'
+                        info['Signature valid at signing time'] = '✗ No (certificate not valid at signature date)'
     
     return info
 
