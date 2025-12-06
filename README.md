@@ -61,6 +61,16 @@ cd src
 python3 p7mviewer.py [file.p7m]
 ```
 
+## Debug
+
+Per abilitare la modalità debug ed ottenere output dettagliati nel terminale, imposta la variabile d'ambiente `P7MVIEWER_DEBUG`:
+
+```bash
+# Modalità debug abilitata
+export P7MVIEWER_DEBUG=true
+python3 src/p7mviewer.py
+```
+
 ## Licenza
 
 [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)

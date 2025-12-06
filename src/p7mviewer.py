@@ -8,7 +8,6 @@ from gi.repository import Gtk, GLib, Gio
 import subprocess
 import os
 import sys
-import tempfile
 import io
 import contextlib
 from pathlib import Path
@@ -48,7 +47,6 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.set_title("P7M Viewer")
         self.set_icon_name("com.github.catoblepa.p7mviewer")
         self.file_estratto = None
-        self.tempdir = None
         self.file_verificato = False
 
         headerbar = Gtk.HeaderBar()
@@ -230,13 +228,10 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.file_verificato = False
         self.aggiorna_ui()
 
-        # Crea una directory temporanea
-        if self.tempdir:
-            debug_print("[DEBUG] Pulizia directory temporanea precedente")
-            self.tempdir.cleanup()
-            self.tempdir = None
-        self.tempdir = tempfile.TemporaryDirectory()
-        debug_print(f"[DEBUG] Creata directory temporanea: {self.tempdir.name}")
+        # Crea una directory nella cache accessibile dal sandbox
+        cache_dir = os.path.join(GLib.get_user_cache_dir(), 'p7mviewer')
+        os.makedirs(cache_dir, exist_ok=True)
+        debug_print(f"[DEBUG] Directory cache: {cache_dir}")
 
         # Nome file estratto senza .p7m
         base_path = Path(file_p7m)
@@ -244,7 +239,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         while base_name.lower().endswith('.p7m'):
             base_name = base_name[:-4]
         base_name = base_name.strip()
-        file_output = os.path.join(self.tempdir.name, base_name)
+        file_output = os.path.join(cache_dir, base_name)
         debug_print(f"[DEBUG] File estratto sarà: {file_output}")
 
         cmd = [
@@ -441,21 +436,21 @@ class FirmeWindow(Gtk.ApplicationWindow):
         if self.file_estratto:
             debug_print(f"[DEBUG] Verifico esistenza file: {self.file_estratto}")
             if os.path.exists(self.file_estratto):
-                debug_print("[DEBUG] File esiste, verifico tipo MIME")
+                debug_print("[DEBUG] File esiste, uso Gtk.FileLauncher per aprirlo")
                 try:
-                    content_type, uncertain = Gio.content_type_guess(self.file_estratto, None)
-                    debug_print(f"[DEBUG] Tipo MIME del file estratto: {content_type}, incerto: {uncertain}")
-                    if content_type and content_type != "application/octet-stream":
-                        uri = GLib.filename_to_uri(self.file_estratto, None)
-                        debug_print(f"[DEBUG] Apro il file con URI: {uri}")
-                        launched = Gio.AppInfo.launch_default_for_uri(uri, None)
-                        if not launched:
-                            debug_print("[DEBUG] Launch default non riuscito, provo con launch_uris")
-                            Gio.AppInfo.launch_uris([uri], None)
-                        debug_print(f"[DEBUG] File aperto con successo: {uri}")
-                    else:
-                        debug_print("[DEBUG] Tipo MIME sconosciuto o generico, non posso aprire con app predefinita")
-                        self.label_info_file.set_markup('<span size="small" color="#f57c00">⚠️ Tipo file non riconosciuto, impossibile aprire automaticamente</span>')
+                    gfile = Gio.File.new_for_path(self.file_estratto)
+                    launcher = Gtk.FileLauncher.new(gfile)
+                    debug_print(f"[DEBUG] FileLauncher creato per: {self.file_estratto}")
+                    
+                    def on_launch_finish(launcher, result):
+                        try:
+                            launcher.launch_finish(result)
+                            debug_print("[DEBUG] File aperto con successo tramite portal")
+                        except Exception as e:
+                            debug_print(f"[DEBUG] Errore apertura file: {e}")
+                            self.label_info_file.set_markup(f'<span size="small" color="#c62828">❌ Errore apertura: {str(e)[:100]}</span>')
+                    
+                    launcher.launch(self, None, on_launch_finish)
                 except Exception as e:
                     self.label_info_file.set_markup(f'<span size="small" color="#c62828">❌ Errore apertura file: {str(e)[:100]}</span>')
                     debug_print(f"[DEBUG] Eccezione in on_apri_estratto_clicked: {e}")
