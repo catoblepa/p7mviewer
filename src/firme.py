@@ -15,7 +15,8 @@ from pathlib import Path
 
 from estrai_firme import analizza_busta
 
-DEBUG = True  # Imposta a False per disabilitare i messaggi di debug
+# Debug mode: controllabile via variabile d'ambiente P7MVIEWER_DEBUG=true
+DEBUG = os.getenv('P7MVIEWER_DEBUG', 'false').lower() in ('true', '1', 'yes')
 
 def debug_print(*args, **kwargs):
     if DEBUG:
@@ -207,16 +208,19 @@ class FirmeWindow(Gtk.ApplicationWindow):
 
         file_dialog.open(self, None, on_file_selected)
 
-    def pulisci_sezioni(self):
-        debug_print("[DEBUG] pulisci_sezioni chiamato")
-        self.label_info_file.set_markup('<span size="small" color="#999999">🔒 Nessun file selezionato</span>')
-        self.status_badge.set_visible(False)
-        # Pulisci listbox
+    def pulisci_listbox(self):
+        """Helper per pulire tutti i widget dalla listbox"""
         while True:
             row = self.firme_listbox.get_row_at_index(0)
             if row is None:
                 break
             self.firme_listbox.remove(row)
+    
+    def pulisci_sezioni(self):
+        debug_print("[DEBUG] pulisci_sezioni chiamato")
+        self.label_info_file.set_markup('<span size="small" color="#999999">🔒 Nessun file selezionato</span>')
+        self.status_badge.set_visible(False)
+        self.pulisci_listbox()
 
     def verifica_firma(self, file_p7m):
         debug_print(f"[DEBUG] verifica_firma chiamato con file: {file_p7m}")
@@ -297,20 +301,16 @@ class FirmeWindow(Gtk.ApplicationWindow):
 
     def crea_expander_firma(self, info, idx):
         """Crea un expander per una singola firma con dettagli espandibili"""
-        livello = info.get('livello_busta', '?')
-        firma_idx = info.get('firmatario_idx', '?')
         identita = info.get('Identità', 'Sconosciuto')
         stato = info.get('Stato certificato', '')
-        data_firma = info.get('Data e ora firma', '')
         
-        # Box principale dell'expander
         expander = Gtk.Expander()
         expander.set_margin_top(4)
         expander.set_margin_bottom(4)
         expander.set_margin_start(8)
         expander.set_margin_end(8)
         
-        # Label dell'header (sempre visibile)
+        # Header sempre visibile
         header_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         
         title_label = Gtk.Label()
@@ -356,17 +356,11 @@ class FirmeWindow(Gtk.ApplicationWindow):
     
     def mostra_info_firma(self, file_p7m):
         debug_print(f"[DEBUG] mostra_info_firma chiamato per file: {file_p7m}")
+        self.pulisci_listbox()
         try:
             with open(file_p7m, 'rb') as f:
                 data = f.read()
             firme_info = analizza_busta(data)
-            
-            # Pulisci listbox
-            while True:
-                row = self.firme_listbox.get_row_at_index(0)
-                if row is None:
-                    break
-                self.firme_listbox.remove(row)
             
             if not firme_info:
                 # Messaggio quando non ci sono firme
@@ -391,13 +385,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
             
             debug_print(f"[DEBUG] Informazioni firma mostrate per {file_p7m}")
         except Exception as e:
-            # Pulisci listbox
-            while True:
-                row = self.firme_listbox.get_row_at_index(0)
-                if row is None:
-                    break
-                self.firme_listbox.remove(row)
-            
+            self.pulisci_listbox()
             error_label = Gtk.Label()
             error_label.set_markup(f'<span color="#c62828">❌ Errore durante l\'analisi delle firme:\n\n{str(e)}</span>')
             error_label.set_margin_top(20)
@@ -407,45 +395,37 @@ class FirmeWindow(Gtk.ApplicationWindow):
     
     def mostra_errore_verifica(self, errore):
         """Mostra un messaggio di errore nella listbox delle firme"""
-        debug_print(f"[DEBUG] mostra_errore_verifica chiamato")
-        # Pulisci listbox
-        while True:
-            row = self.firme_listbox.get_row_at_index(0)
-            if row is None:
-                break
-            self.firme_listbox.remove(row)
+        self.pulisci_listbox()
         
-        # Box per messaggio errore
         error_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         error_box.set_margin_top(30)
         error_box.set_margin_bottom(30)
         error_box.set_margin_start(20)
         error_box.set_margin_end(20)
         
-        # Icona e titolo
+        # Titolo
         title_label = Gtk.Label()
         title_label.set_markup('<span size="large">❌</span>\n<span size="large" weight="bold">Impossibile verificare il file</span>')
         title_label.set_justify(Gtk.Justification.CENTER)
         error_box.append(title_label)
         
-        # Messaggio principale
+        # Messaggio
         msg_label = Gtk.Label()
         msg_label.set_markup('<span color="#666">Il file selezionato non è un file P7M valido\no non può essere processato.</span>')
         msg_label.set_justify(Gtk.Justification.CENTER)
         msg_label.set_wrap(True)
         error_box.append(msg_label)
         
-        # Dettagli tecnici (espandibile)
+        # Dettagli tecnici
         if errore:
-            details_expander = Gtk.Expander()
-            details_expander.set_label("Dettagli tecnici")
-            details_expander.set_margin_top(12)
-            
-            details_label = Gtk.Label()
-            # Pulisci l'errore per renderlo più leggibile
             errore_pulito = errore.split('\n')[0] if '\n' in errore else errore
             if 'Error reading S/MIME message' in errore:
                 errore_pulito = "Il file non è in formato P7M/CAdES valido"
+            
+            details_expander = Gtk.Expander(label="Dettagli tecnici")
+            details_expander.set_margin_top(12)
+            
+            details_label = Gtk.Label()
             details_label.set_markup(f'<span size="small" font_family="monospace" color="#999">{errore_pulito}</span>')
             details_label.set_wrap(True)
             details_label.set_xalign(0)
