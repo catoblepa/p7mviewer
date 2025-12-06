@@ -45,7 +45,7 @@
 Per installare l'applicazione in ambiente isolato tramite Flatpak:
 
 ```bash
-flatpak-builder --user --install --force-clean build-dir com.github.catoblepa.p7mviewer.yaml
+flatpak-builder --user --install --force-clean build-dir io.github.catoblepa.p7mviewer.yaml
 ```
 
 ### Installazione manuale

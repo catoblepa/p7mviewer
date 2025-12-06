@@ -24,7 +24,7 @@ def debug_print(*args, **kwargs):
 class FirmeApp(Gtk.Application):
     def __init__(self):
         super().__init__(
-            application_id="com.github.catoblepa.p7mviewer",
+            application_id="io.github.catoblepa.p7mviewer",
             flags=Gio.ApplicationFlags.HANDLES_OPEN
         )
         debug_print("[DEBUG] Applicazione inizializzata")
@@ -45,7 +45,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         super().__init__(application=app)
         debug_print("[DEBUG] Creazione finestra principale")
         self.set_title("P7M Viewer")
-        self.set_icon_name("com.github.catoblepa.p7mviewer")
+        self.set_icon_name("io.github.catoblepa.p7mviewer")
         self.file_estratto = None
         self.file_verificato = False
 

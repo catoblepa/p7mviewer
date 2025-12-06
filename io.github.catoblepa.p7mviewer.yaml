@@ -1,4 +1,4 @@
-app-id: com.github.catoblepa.p7mviewer
+app-id: io.github.catoblepa.p7mviewer
 runtime: org.gnome.Platform
 runtime-version: '49'
 sdk: org.gnome.Sdk
@@ -24,17 +24,17 @@ modules:
     build-commands:
       - install -Dm755 p7mviewer.py /app/bin/p7mviewer.py
       - install -Dm644 signature_parser.py /app/bin/signature_parser.py
-      - install -Dm644 com.github.catoblepa.p7mviewer.svg /app/share/icons/hicolor/scalable/apps/com.github.catoblepa.p7mviewer.svg
-      - install -Dm644 com.github.catoblepa.p7mviewer.desktop /app/share/applications/com.github.catoblepa.p7mviewer.desktop
-      - install -Dm644 com.github.catoblepa.p7mviewer.metainfo.xml /app/share/metainfo/com.github.catoblepa.p7mviewer.metainfo.xml
+      - install -Dm644 io.github.catoblepa.p7mviewer.svg /app/share/icons/hicolor/scalable/apps/io.github.catoblepa.p7mviewer.svg
+      - install -Dm644 io.github.catoblepa.p7mviewer.desktop /app/share/applications/io.github.catoblepa.p7mviewer.desktop
+      - install -Dm644 io.github.catoblepa.p7mviewer.metainfo.xml /app/share/metainfo/io.github.catoblepa.p7mviewer.metainfo.xml
     sources:
       - type: file
         path: src/p7mviewer.py
       - type: file
         path: src/signature_parser.py
       - type: file
-        path: src/com.github.catoblepa.p7mviewer.svg
+        path: src/io.github.catoblepa.p7mviewer.svg
       - type: file
-        path: src/com.github.catoblepa.p7mviewer.desktop
+        path: src/io.github.catoblepa.p7mviewer.desktop
       - type: file
-        path: src/com.github.catoblepa.p7mviewer.metainfo.xml
+        path: src/io.github.catoblepa.p7mviewer.metainfo.xml

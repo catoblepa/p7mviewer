@@ -2,7 +2,7 @@
 Name=P7M Viewer
 Comment=Verify and view P7M/CAdES digital signatures
 Exec=p7mviewer.py %F
-Icon=com.github.catoblepa.p7mviewer
+Icon=io.github.catoblepa.p7mviewer
 Type=Application
 Categories=Utility;Office;
 MimeType=application/pkcs7-mime;application/x-pkcs7-mime;

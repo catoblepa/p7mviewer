@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.github.catoblepa.p7mviewer</id>
+  <id>io.github.catoblepa.p7mviewer</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   <name>P7M Viewer</name>
@@ -34,7 +34,7 @@
     </ul>
   </description>
   
-  <launchable type="desktop-id">com.github.catoblepa.p7mviewer.desktop</launchable>
+  <launchable type="desktop-id">io.github.catoblepa.p7mviewer.desktop</launchable>
   
   <url type="homepage">https://github.com/catoblepa/p7mviewer</url>
   <url type="bugtracker">https://github.com/catoblepa/p7mviewer/issues</url>
