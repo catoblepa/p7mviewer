@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=Firme
-Exec=firme.py %F
-Icon=com.github.catoblepa.firme
-Type=Application
-Categories=Utility;
-MimeType=application/pkcs7-mime;
-StartupWMClass=Firme

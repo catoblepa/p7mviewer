@@ -24,7 +24,7 @@ def debug_print(*args, **kwargs):
 class FirmeApp(Gtk.Application):
     def __init__(self):
         super().__init__(
-            application_id="com.github.catoblepa.firme",
+            application_id="com.github.catoblepa.p7mviewer",
             flags=Gio.ApplicationFlags.HANDLES_OPEN
         )
         debug_print("[DEBUG] Applicazione inizializzata")
@@ -44,24 +44,26 @@ class FirmeWindow(Gtk.ApplicationWindow):
     def __init__(self, app, file_p7m=None):
         super().__init__(application=app)
         debug_print("[DEBUG] Creazione finestra principale")
-        self.set_title("Verifica Firme Digitali")
-        self.set_icon_name("com.github.catoblepa.firme")
+        self.set_title("P7M Viewer")
+        self.set_icon_name("com.github.catoblepa.p7mviewer")
         self.file_estratto = None
         self.tempdir = None
         self.file_verificato = False
 
         headerbar = Gtk.HeaderBar()
         title_label = Gtk.Label()
-        title_label.set_markup("<b>Firme</b>")
+        title_label.set_markup("<b>P7M Viewer</b>")
         headerbar.set_title_widget(title_label)
 
-        btn_apri = Gtk.Button.new_with_label("Apri")
+        btn_apri = Gtk.Button.new_with_label("📁 Seleziona file")
         btn_apri.connect("clicked", self.on_file_chooser_clicked)
+        btn_apri.set_tooltip_text("Seleziona un file P7M da verificare")
         headerbar.pack_start(btn_apri)
 
-        self.btn_apri_estratto = Gtk.Button.new_with_label("Apri file estratto")
+        self.btn_apri_estratto = Gtk.Button.new_with_label("📄 Visualizza contenuto")
         self.btn_apri_estratto.set_sensitive(False)
         self.btn_apri_estratto.connect("clicked", self.on_apri_estratto_clicked)
+        self.btn_apri_estratto.set_tooltip_text("Apri il documento originale estratto dal file firmato")
         headerbar.pack_end(self.btn_apri_estratto)
 
         self.set_titlebar(headerbar)
@@ -71,49 +73,81 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.set_margin_start(10)
         self.set_margin_end(10)
 
-        self.vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        self.vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.set_child(self.vbox)
 
-        # SEZIONE 1: Titolo e info file
-        self.label_info_title = Gtk.Label()
-        self.label_info_title.set_markup('<span size="large" weight="bold" color="#336699">File verificato</span>')
-        self.label_info_title.set_halign(Gtk.Align.START)
-        self.label_info_title.set_margin_bottom(2)
+        # SEZIONE 1: Box per file verificato con margini
+        self.file_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        self.file_box.set_margin_top(12)
+        self.file_box.set_margin_bottom(8)
+        self.file_box.set_margin_start(16)
+        self.file_box.set_margin_end(16)
 
         self.label_info_file = Gtk.Label()
-        self.label_info_file.set_markup('<span size="medium" color="#444444">Nessun file selezionato.</span>')
+        self.label_info_file.set_markup('<span size="small" color="#999999">🔒 Nessun file selezionato</span>')
         self.label_info_file.set_halign(Gtk.Align.START)
-        self.label_info_file.set_selectable(True)
+        self.label_info_file.set_selectable(False)
+        self.label_info_file.set_wrap(True)
+        self.label_info_file.set_xalign(0)
+        self.file_box.append(self.label_info_file)
+        
+        # Badge stato verifica (inizialmente nascosto)
+        self.status_badge = Gtk.Label()
+        self.status_badge.set_halign(Gtk.Align.START)
+        self.status_badge.set_visible(False)
+        self.status_badge.set_margin_top(6)
+        self.file_box.append(self.status_badge)
+        
+        self.vbox.append(self.file_box)
+        
+        # Separatore tra sezioni
+        separator_sezioni = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        separator_sezioni.set_margin_top(20)
+        separator_sezioni.set_margin_bottom(16)
+        separator_sezioni.set_margin_start(16)
+        separator_sezioni.set_margin_end(16)
+        self.vbox.append(separator_sezioni)
 
         # SEZIONE 2: Titolo firme
         self.label_firme_title = Gtk.Label()
-        self.label_firme_title.set_markup('<span size="large" weight="bold" color="#336699">Firme digitali rilevate</span>')
+        self.label_firme_title.set_markup('<span size="small" weight="bold" color="#336699">FIRME DIGITALI:</span>')
         self.label_firme_title.set_halign(Gtk.Align.START)
-        self.label_firme_title.set_margin_top(12)
-        self.label_firme_title.set_margin_bottom(2)
+        self.label_firme_title.set_margin_top(8)
+        self.label_firme_title.set_margin_bottom(6)
+        self.label_firme_title.set_margin_start(16)
+        self.label_firme_title.set_margin_end(16)
+        self.vbox.append(self.label_firme_title)
+        
+        # Separatore dopo titolo firme
+        separator2 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        separator2.set_margin_bottom(8)
+        separator2.set_margin_start(16)
+        separator2.set_margin_end(16)
+        self.vbox.append(separator2)
 
-        # SEZIONE 3: Elenco firme (scrollabile)
-        self.elenco_firme_textview = Gtk.TextView()
-        self.elenco_firme_textview.set_editable(False)
-        self.elenco_firme_textview.set_wrap_mode(Gtk.WrapMode.WORD)
-        self.elenco_firme_textview.set_hexpand(True)
-        self.elenco_firme_textview.set_vexpand(True)
-        self.elenco_firme_buffer = self.elenco_firme_textview.get_buffer()
+        # SEZIONE 3: Elenco firme con expander (scrollabile)
+        self.firme_listbox = Gtk.ListBox()
+        self.firme_listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+        self.firme_listbox.add_css_class('boxed-list')
+        self.firme_listbox.set_hexpand(True)
+        self.firme_listbox.set_vexpand(True)
 
         self.scrolled = Gtk.ScrolledWindow()
         self.scrolled.set_min_content_height(100)
         self.scrolled.set_hexpand(True)
         self.scrolled.set_vexpand(True)
-        self.scrolled.set_child(self.elenco_firme_textview)
+        self.scrolled.set_child(self.firme_listbox)
+        self.vbox.append(self.scrolled)
 
         # Immagine e label iniziale
-        self.image = Gtk.Image.new_from_icon_name("dialog-information")
+        self.image = Gtk.Image.new_from_icon_name("application-certificate")
         self.image.set_pixel_size(96)
         self.image.set_margin_top(24)
+        self.image.set_opacity(0.5)
 
         self.label = Gtk.Label()
         self.label.set_margin_top(24)
-        self.label.set_markup('<b>Seleziona un file .p7m da verificare</b>')
+        self.label.set_markup('<span size="large"><b>📄 Seleziona un file .p7m da verificare</b></span>\n\n<span size="small" color="#666666">Clicca su "📁 Seleziona file" per cominciare</span>')
         self.label.set_justify(Gtk.Justification.CENTER)
         self.label.set_halign(Gtk.Align.CENTER)
         self.label.set_valign(Gtk.Align.CENTER)
@@ -132,19 +166,27 @@ class FirmeWindow(Gtk.ApplicationWindow):
             self.vbox.append(self.image)
             self.vbox.append(self.label)
         else:
-            self.vbox.append(self.label_info_title)
-            self.vbox.append(self.label_info_file)
+            self.vbox.append(self.file_box)
             self.vbox.append(self.label_firme_title)
             self.vbox.append(self.scrolled)
 
     def on_file_chooser_clicked(self, widget):
         debug_print("[DEBUG] Pulsante 'Apri' cliccato, apro file dialog")
         file_dialog = Gtk.FileDialog()
+        file_dialog.set_title("Seleziona un file .p7m da verificare")
+        
         filters = Gio.ListStore.new(Gtk.FileFilter)
         filter_p7m = Gtk.FileFilter()
-        filter_p7m.set_name("File .p7m")
+        filter_p7m.set_name("File firmati digitalmente (.p7m)")
         filter_p7m.add_pattern("*.p7m")
+        filter_p7m.add_pattern("*.P7M")
         filters.append(filter_p7m)
+        
+        filter_all = Gtk.FileFilter()
+        filter_all.set_name("Tutti i file")
+        filter_all.add_pattern("*")
+        filters.append(filter_all)
+        
         file_dialog.set_filters(filters)
 
         def on_file_selected(dialog, result):
@@ -156,7 +198,10 @@ class FirmeWindow(Gtk.ApplicationWindow):
                     self.pulisci_sezioni()
                     self.verifica_firma(file_p7m)
             except GLib.Error as e:
-                debug_print(f"[DEBUG] Errore apertura file: {e}")
+                # Utente ha annullato la selezione
+                if e.code != 2:  # GTK_DIALOG_ERROR_DISMISSED
+                    debug_print(f"[DEBUG] Errore apertura file: {e}")
+                    self.label_info_file.set_markup(f'<span size="small" color="#c62828">❌ Errore selezione file: {str(e)[:100]}</span>')
                 self.file_verificato = False
                 self.aggiorna_ui()
 
@@ -164,8 +209,14 @@ class FirmeWindow(Gtk.ApplicationWindow):
 
     def pulisci_sezioni(self):
         debug_print("[DEBUG] pulisci_sezioni chiamato")
-        self.label_info_file.set_markup('<span size="medium" color="#444444">Nessun file selezionato.</span>')
-        self.elenco_firme_buffer.set_text("")
+        self.label_info_file.set_markup('<span size="small" color="#999999">🔒 Nessun file selezionato</span>')
+        self.status_badge.set_visible(False)
+        # Pulisci listbox
+        while True:
+            row = self.firme_listbox.get_row_at_index(0)
+            if row is None:
+                break
+            self.firme_listbox.remove(row)
 
     def verifica_firma(self, file_p7m):
         debug_print(f"[DEBUG] verifica_firma chiamato con file: {file_p7m}")
@@ -200,7 +251,11 @@ class FirmeWindow(Gtk.ApplicationWindow):
             "-out", file_output
         ]
 
-        self.label_info_file.set_markup(f'<span size="medium" color="#444444">{file_p7m}</span>')
+        # Formatta info file
+        nome_file = os.path.basename(file_p7m)
+        percorso_dir = os.path.dirname(file_p7m)
+        file_markup = f'<span size="small" color="#666666">📂 {percorso_dir}</span>\n<span size="medium" weight="bold">{nome_file}</span>'
+        self.label_info_file.set_markup(file_markup)
 
         try:
             debug_print(f"[DEBUG] Eseguo comando: {' '.join(cmd)}")
@@ -214,32 +269,192 @@ class FirmeWindow(Gtk.ApplicationWindow):
                 self.btn_apri_estratto.set_sensitive(True)
                 self.file_verificato = True
                 self.aggiorna_ui()
+                # Mostra badge successo
+                self.label_info_file.set_markup(file_markup)
+                self.status_badge.set_markup('<span size="small" bgcolor="#e8f5e9" color="#2e7d32"> ✓ Verifica completata con successo </span>')
+                self.status_badge.set_visible(True)
                 self.mostra_info_firma(file_p7m)
             else:
-                self.label_info_file.set_markup(f'<span size="medium" color="#cc0000">Errore nella verifica della firma:\n{result.stderr}</span>')
+                # Errore nella verifica - mostra interfaccia con messaggio
+                self.file_verificato = True
+                self.aggiorna_ui()
+                self.label_info_file.set_markup(file_markup)
+                self.status_badge.set_markup('<span size="small" bgcolor="#ffebee" color="#c62828"> ❌ Errore nella verifica </span>')
+                self.status_badge.set_visible(True)
+                # Mostra messaggio di errore nella listbox
+                self.mostra_errore_verifica(result.stderr)
                 debug_print(f"[DEBUG] Errore openssl: {result.stderr}")
         except Exception as e:
-            self.label_info_file.set_markup(f'<span size="medium" color="#cc0000">Errore generico: {e}</span>')
+            # Eccezione - mostra interfaccia con messaggio
+            self.file_verificato = True
+            self.aggiorna_ui()
+            self.label_info_file.set_markup(file_markup)
+            self.status_badge.set_markup(f'<span size="small" bgcolor="#ffebee" color="#c62828"> ❌ Errore: {str(e)[:50]} </span>')
+            self.status_badge.set_visible(True)
+            # Mostra messaggio di errore nella listbox
+            self.mostra_errore_verifica(str(e))
             debug_print(f"[DEBUG] Eccezione in verifica_firma: {e}")
 
+    def crea_expander_firma(self, info, idx):
+        """Crea un expander per una singola firma con dettagli espandibili"""
+        livello = info.get('livello_busta', '?')
+        firma_idx = info.get('firmatario_idx', '?')
+        identita = info.get('Identità', 'Sconosciuto')
+        stato = info.get('Stato certificato', '')
+        data_firma = info.get('Data e ora firma', '')
+        
+        # Box principale dell'expander
+        expander = Gtk.Expander()
+        expander.set_margin_top(4)
+        expander.set_margin_bottom(4)
+        expander.set_margin_start(8)
+        expander.set_margin_end(8)
+        
+        # Label dell'header (sempre visibile)
+        header_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        
+        title_label = Gtk.Label()
+        title_label.set_markup(f'<b>🖊️ {identita}</b>')
+        title_label.set_halign(Gtk.Align.START)
+        header_box.append(title_label)
+        
+        subtitle = Gtk.Label()
+        subtitle.set_markup(f'<span size="small" color="#666">{stato}</span>')
+        subtitle.set_halign(Gtk.Align.START)
+        header_box.append(subtitle)
+        
+        expander.set_label_widget(header_box)
+        
+        # Contenuto espandibile (dettagli)
+        details_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        details_box.set_margin_top(8)
+        details_box.set_margin_start(12)
+        
+        # Campi da mostrare quando espanso
+        campi_dettagli = [
+            ('Codice Fiscale', '🆔'),
+            ('Organizzazione', '🏢'),
+            ('Data e ora firma', '📅'),
+            ('Firma valida al momento', '✔️'),
+            ('Validità dal', '📆'),
+            ('Validità al', '📆'),
+            ('Certificato emesso da', '🏛️'),
+        ]
+        
+        for campo, icona in campi_dettagli:
+            if campo in info:
+                valore = info[campo]
+                detail_label = Gtk.Label()
+                detail_label.set_markup(f'<span size="small">{icona} <b>{campo}:</b> {valore}</span>')
+                detail_label.set_halign(Gtk.Align.START)
+                detail_label.set_wrap(True)
+                detail_label.set_xalign(0)
+                details_box.append(detail_label)
+        
+        expander.set_child(details_box)
+        return expander
+    
     def mostra_info_firma(self, file_p7m):
         debug_print(f"[DEBUG] mostra_info_firma chiamato per file: {file_p7m}")
         try:
             with open(file_p7m, 'rb') as f:
                 data = f.read()
             firme_info = analizza_busta(data)
-            elenco = []
-            for info in firme_info:
-                elenco.append(f"--- Firmatario {info.get('firmatario_idx', '?')} (Livello busta {info.get('livello_busta', '?')}) ---")
-                for k, v in info.items():
-                    if k not in ('firmatario_idx', 'livello_busta'):
-                        elenco.append(f"{k}: {v}")
-                elenco.append("")  # riga vuota tra firme
-            self.elenco_firme_buffer.set_text("\n".join(elenco))
+            
+            # Pulisci listbox
+            while True:
+                row = self.firme_listbox.get_row_at_index(0)
+                if row is None:
+                    break
+                self.firme_listbox.remove(row)
+            
+            if not firme_info:
+                # Messaggio quando non ci sono firme
+                no_firme_label = Gtk.Label()
+                no_firme_label.set_markup('<span size="small" color="#999">⚠️  Nessuna firma digitale trovata nel file</span>')
+                no_firme_label.set_margin_top(20)
+                no_firme_label.set_margin_bottom(20)
+                self.firme_listbox.append(no_firme_label)
+                return
+            
+            # Aggiungi ogni firma come expander
+            for idx, info in enumerate(firme_info, 1):
+                expander = self.crea_expander_firma(info, idx)
+                self.firme_listbox.append(expander)
+            
+            # Aggiungi footer con conteggio
+            footer_label = Gtk.Label()
+            footer_label.set_markup(f'<span size="small" color="#666">✓ Totale: {len(firme_info)} firma/e verificata/e</span>')
+            footer_label.set_margin_top(12)
+            footer_label.set_margin_bottom(8)
+            self.firme_listbox.append(footer_label)
+            
             debug_print(f"[DEBUG] Informazioni firma mostrate per {file_p7m}")
         except Exception as e:
-            self.elenco_firme_buffer.set_text(f"Errore info firma: {e}")
+            # Pulisci listbox
+            while True:
+                row = self.firme_listbox.get_row_at_index(0)
+                if row is None:
+                    break
+                self.firme_listbox.remove(row)
+            
+            error_label = Gtk.Label()
+            error_label.set_markup(f'<span color="#c62828">❌ Errore durante l\'analisi delle firme:\n\n{str(e)}</span>')
+            error_label.set_margin_top(20)
+            error_label.set_margin_bottom(20)
+            self.firme_listbox.append(error_label)
             debug_print(f"[DEBUG] Eccezione in mostra_info_firma: {e}")
+    
+    def mostra_errore_verifica(self, errore):
+        """Mostra un messaggio di errore nella listbox delle firme"""
+        debug_print(f"[DEBUG] mostra_errore_verifica chiamato")
+        # Pulisci listbox
+        while True:
+            row = self.firme_listbox.get_row_at_index(0)
+            if row is None:
+                break
+            self.firme_listbox.remove(row)
+        
+        # Box per messaggio errore
+        error_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        error_box.set_margin_top(30)
+        error_box.set_margin_bottom(30)
+        error_box.set_margin_start(20)
+        error_box.set_margin_end(20)
+        
+        # Icona e titolo
+        title_label = Gtk.Label()
+        title_label.set_markup('<span size="large">❌</span>\n<span size="large" weight="bold">Impossibile verificare il file</span>')
+        title_label.set_justify(Gtk.Justification.CENTER)
+        error_box.append(title_label)
+        
+        # Messaggio principale
+        msg_label = Gtk.Label()
+        msg_label.set_markup('<span color="#666">Il file selezionato non è un file P7M valido\no non può essere processato.</span>')
+        msg_label.set_justify(Gtk.Justification.CENTER)
+        msg_label.set_wrap(True)
+        error_box.append(msg_label)
+        
+        # Dettagli tecnici (espandibile)
+        if errore:
+            details_expander = Gtk.Expander()
+            details_expander.set_label("Dettagli tecnici")
+            details_expander.set_margin_top(12)
+            
+            details_label = Gtk.Label()
+            # Pulisci l'errore per renderlo più leggibile
+            errore_pulito = errore.split('\n')[0] if '\n' in errore else errore
+            if 'Error reading S/MIME message' in errore:
+                errore_pulito = "Il file non è in formato P7M/CAdES valido"
+            details_label.set_markup(f'<span size="small" font_family="monospace" color="#999">{errore_pulito}</span>')
+            details_label.set_wrap(True)
+            details_label.set_xalign(0)
+            details_label.set_margin_start(12)
+            details_label.set_margin_top(8)
+            details_expander.set_child(details_label)
+            error_box.append(details_expander)
+        
+        self.firme_listbox.append(error_box)
 
     def on_apri_estratto_clicked(self, widget):
         debug_print(f"[DEBUG] Cliccato su 'Apri file estratto'. file_estratto = {self.file_estratto}")
@@ -260,47 +475,16 @@ class FirmeWindow(Gtk.ApplicationWindow):
                         debug_print(f"[DEBUG] File aperto con successo: {uri}")
                     else:
                         debug_print("[DEBUG] Tipo MIME sconosciuto o generico, non posso aprire con app predefinita")
-                        self.label_info_file.set_markup('<span size="medium" color="#cc0000">Tipo file non riconosciuto, impossibile aprire automaticamente.</span>')
+                        self.label_info_file.set_markup('<span size="small" color="#f57c00">⚠️ Tipo file non riconosciuto, impossibile aprire automaticamente</span>')
                 except Exception as e:
-                    self.label_info_file.set_markup(f'<span size="medium" color="#cc0000">Errore apertura file: {e}</span>')
+                    self.label_info_file.set_markup(f'<span size="small" color="#c62828">❌ Errore apertura file: {str(e)[:100]}</span>')
                     debug_print(f"[DEBUG] Eccezione in on_apri_estratto_clicked: {e}")
             else:
                 debug_print(f"[DEBUG] File NON esiste: {self.file_estratto}")
-                self.label_info_file.set_markup(f'<span size="medium" color="#cc0000">Il file estratto non esiste: {self.file_estratto}</span>')
+                self.label_info_file.set_markup(f'<span size="small" color="#c62828">❌ Il file estratto non esiste più</span>')
         else:
             debug_print("[DEBUG] file_estratto non impostato.")
-            self.label_info_file.set_markup('<span size="medium" color="#cc0000">Nessun file estratto da aprire.</span>')
-
-    # def xdg_on_apri_estratto_clicked(self, widget):
-    #     debug_print(f"[DEBUG] Cliccato su 'Apri file estratto'. file_estratto = {self.file_estratto}")
-    #     if self.file_estratto:
-    #         debug_print(f"[DEBUG] Verifico esistenza file: {self.file_estratto}")
-    #         if os.path.exists(self.file_estratto):
-    #             debug_print("[DEBUG] File esiste, verifico tipo MIME")
-    #             try:
-    #                 content_type, uncertain = Gio.content_type_guess(self.file_estratto, None)
-    #                 debug_print(f"[DEBUG] Tipo MIME del file estratto: {content_type}, incerto: {uncertain}")
-    #                 if content_type and content_type != "application/octet-stream":
-    #                     # Provo ad aprire il file con xdg-open
-    #                     try:
-    #                         subprocess.run(["xdg-open", self.file_estratto], check=False)
-    #                         debug_print(f"[DEBUG] Aperto con xdg-open: {self.file_estratto}")
-    #                     except Exception as e:
-    #                         debug_print(f"[DEBUG] Errore aprendo con xdg-open: {e}")
-    #                         self.label_info_file.set_markup(f'<span size="medium" color="#cc0000">Errore aprendo con xdg-open: {e}</span>')
-    #                 else:
-    #                     debug_print("[DEBUG] Tipo MIME sconosciuto o generico, non posso aprire con app predefinita")
-    #                     self.label_info_file.set_markup('<span size="medium" color="#cc0000">Tipo file non riconosciuto, impossibile aprire automaticamente.</span>')
-    #             except Exception as e:
-    #                 self.label_info_file.set_markup(f'<span size="medium" color="#cc0000">Errore apertura file: {e}</span>')
-    #                 debug_print(f"[DEBUG] Eccezione in on_apri_estratto_clicked: {e}")
-    #         else:
-    #             debug_print(f"[DEBUG] File NON esiste: {self.file_estratto}")
-    #             self.label_info_file.set_markup(f'<span size="medium" color="#cc0000">Il file estratto non esiste: {self.file_estratto}</span>')
-    #     else:
-    #         debug_print("[DEBUG] file_estratto non impostato.")
-    #         self.label_info_file.set_markup('<span size="medium" color="#cc0000">Nessun file estratto da aprire.</span>')
-
+            self.label_info_file.set_markup('<span size="small" color="#f57c00">⚠️ Nessun file estratto disponibile</span>')
 
 def main():
     debug_print("[DEBUG] main() chiamato")

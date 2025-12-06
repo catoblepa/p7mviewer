@@ -1,13 +1,24 @@
-# Verifica Firme Digitali
+# P7M Viewer
 
-**Verifica Firme Digitali** è una semplice applicazione GTK4 per GNOME che permette di verificare file firmati digitalmente in formato `.p7m` (CAdES) e visualizzare i dettagli delle firme digitali contenute.
+**P7M Viewer** è una semplice applicazione GTK4 per GNOME che permette di verificare file firmati digitalmente in formato `.p7m` (CAdES) e visualizzare i dettagli delle firme digitali contenute.
 
 ## Funzionalità
 
 - **Apertura e verifica di file .p7m**  
   Seleziona un file firmato digitalmente e verifica la validità della firma tramite OpenSSL.
-- **Visualizzazione dettagli firmatari**  
-  Mostra l’elenco dei firmatari e i dettagli delle firme digitali rilevate.
+- **Supporto formati multipli**  
+  Rileva e gestisce automaticamente file P7M in formato Base64, DER e PEM.
+- **Visualizzazione dettagli firmatari completi**  
+  Mostra per ogni firmatario:
+  - Nome completo
+  - Codice Fiscale
+  - Organizzazione
+  - Periodo di validità del certificato
+  - Stato certificato (valido/scaduto)
+  - Data e ora della firma
+  - Verifica se la firma era valida al momento della sottoscrizione
+- **Supporto firme multiple e annidate**  
+  Gestisce file con doppia firma (`.p7m`) e buste annidate.
 - **Estrazione del file originale**  
   Permette di aprire il file estratto dal pacchetto firmato.
 - **Interfaccia moderna**  
@@ -15,24 +26,39 @@
 
 ## Come si usa
 
-1. **Avvia l’applicazione.**
-2. **Clicca su “Apri”** e seleziona un file `.p7m`.
+1. **Avvia l'applicazione.**
+2. **Clicca su "📁 Seleziona file"** e seleziona un file `.p7m`.
 3. **Visualizza i dettagli delle firme** nella finestra principale.
-4. **Apri il file estratto** cliccando su “Apri file estratto” (se la verifica ha successo).
+4. **Apri il file estratto** cliccando su "📄 Visualizza contenuto" (se la verifica ha successo).
 
 ## Requisiti
 
-- Python 3
+- Python 3.8+
 - GTK 4 e PyGObject
 - OpenSSL installato nel sistema
-- Modulo Python `signers.py` (deve contenere la funzione `analizza_busta`)
+- Libreria Python `asn1crypto` (per analisi certificati digitali)
 
-## Installazione tramite Flatpak
+## Installazione
 
-Per installare l’applicazione in ambiente isolato tramite Flatpak:
+### Installazione tramite Flatpak
+
+Per installare l'applicazione in ambiente isolato tramite Flatpak:
 
 ```bash
-flatpak-builder --user --install --force-clean build-dir com.github.catoblepa.firme.yaml
+flatpak-builder --user --install --force-clean build-dir com.github.catoblepa.p7mviewer.yaml
+```
+
+### Installazione manuale
+
+Se preferisci eseguire l'applicazione direttamente:
+
+```bash
+# Installa dipendenze
+pip install asn1crypto
+
+# Esegui l'applicazione
+cd src
+python3 firme.py [file.p7m]
 ```
 
 ## Licenza

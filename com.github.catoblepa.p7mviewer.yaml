@@ -1,6 +1,6 @@
-app-id: com.github.catoblepa.firme
+app-id: com.github.catoblepa.p7mviewer
 runtime: org.gnome.Platform
-runtime-version: '48'
+runtime-version: '49'
 sdk: org.gnome.Sdk
 command: firme.py
 finish-args:
@@ -25,14 +25,14 @@ modules:
     build-commands:
       - install -Dm755 firme.py /app/bin/firme.py
       - install -Dm644 estrai_firme.py /app/bin/estrai_firme.py
-      - install -Dm644 com.github.catoblepa.firme.svg /app/share/icons/hicolor/scalable/apps/com.github.catoblepa.firme.svg
-      - install -Dm644 com.github.catoblepa.firme.desktop /app/share/applications/com.github.catoblepa.firme.desktop
+      - install -Dm644 com.github.catoblepa.p7mviewer.svg /app/share/icons/hicolor/scalable/apps/com.github.catoblepa.p7mviewer.svg
+      - install -Dm644 com.github.catoblepa.p7mviewer.desktop /app/share/applications/com.github.catoblepa.p7mviewer.desktop
     sources:
       - type: file
         path: src/firme.py
       - type: file
         path: src/estrai_firme.py
       - type: file
-        path: src/com.github.catoblepa.firme.svg
+        path: src/com.github.catoblepa.p7mviewer.svg
       - type: file
-        path: src/com.github.catoblepa.firme.desktop
+        path: src/com.github.catoblepa.p7mviewer.desktop
