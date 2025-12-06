@@ -27,8 +27,8 @@ jobs:
           manifest-path: com.github.catoblepa.p7mviewer.yaml
           bundle: com.github.catoblepa.p7mviewer.flatpak
 
-      - name: Upload Flatpak bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: p7mviewer-flatpak
-          path: com.github.catoblepa.p7mviewer.flatpak
+      # - name: Upload Flatpak bundle
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: p7mviewer-flatpak
+      #     path: com.github.catoblepa.p7mviewer.flatpak

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.github.catoblepa.p7mviewer</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>P7M Viewer</name>
+  <summary>Verify and view P7M/CAdES digital signatures</summary>
+  <summary xml:lang="it">Verifica e visualizza firme digitali P7M/CAdES</summary>
+  
+  <description>
+    <p>
+      P7M Viewer is a GTK4 application for verifying and viewing digitally signed files in P7M (CAdES) format.
+      It allows you to inspect digital signatures, extract signed documents, and verify the authenticity of signatures.
+    </p>
+    <p xml:lang="it">
+      P7M Viewer è un'applicazione GTK4 per verificare e visualizzare file firmati digitalmente in formato P7M (CAdES).
+      Permette di ispezionare le firme digitali, estrarre i documenti firmati e verificare l'autenticità delle firme.
+    </p>
+    <p>Features:</p>
+    <p xml:lang="it">Funzionalità:</p>
+    <ul>
+      <li>Automatic format detection (Base64, DER, PEM)</li>
+      <li xml:lang="it">Rilevamento automatico del formato (Base64, DER, PEM)</li>
+      <li>Support for multiple and nested signatures</li>
+      <li xml:lang="it">Supporto per firme multiple e annidate</li>
+      <li>Display signer details: name, tax code (Codice Fiscale), organization</li>
+      <li xml:lang="it">Visualizzazione dettagli firmatario: nome, Codice Fiscale, organizzazione</li>
+      <li>Certificate validity verification</li>
+      <li xml:lang="it">Verifica validità certificato</li>
+      <li>Timestamp verification (signature valid at signing time)</li>
+      <li xml:lang="it">Verifica timestamp (firma valida al momento della sottoscrizione)</li>
+      <li>Extract and open the original signed document</li>
+      <li xml:lang="it">Estrazione e apertura del documento originale firmato</li>
+    </ul>
+  </description>
+  
+  <launchable type="desktop-id">com.github.catoblepa.p7mviewer.desktop</launchable>
+  
+  <url type="homepage">https://github.com/catoblepa/firme</url>
+  <url type="bugtracker">https://github.com/catoblepa/firme/issues</url>
+  
+  <developer id="org.catoblepa">
+    <name>Davide Truffa</name>
+  </developer>
+  
+  <content_rating type="oars-1.1" />
+  
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+  
+  <screenshots>
+    <screenshot type="default">
+      <caption>Main window showing signature verification</caption>
+      <caption xml:lang="it">Finestra principale con verifica delle firme</caption>
+      <image>https://raw.githubusercontent.com/catoblepa/firme/main/screenshots/main-window.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Signature details with expandable information</caption>
+      <caption xml:lang="it">Dettagli firma con informazioni espandibili</caption>
+      <image>https://raw.githubusercontent.com/catoblepa/firme/main/screenshots/signature-details.png</image>
+    </screenshot>
+  </screenshots>
+  
+  <releases>
+    <release version="1.0.0" date="2025-12-06">
+      <description>
+        <p>Initial release</p>
+        <p xml:lang="it">Rilascio iniziale</p>
+        <ul>
+          <li>P7M/CAdES signature verification</li>
+          <li xml:lang="it">Verifica firme P7M/CAdES</li>
+          <li>Multiple signature support</li>
+          <li xml:lang="it">Supporto firme multiple</li>
+          <li>Codice Fiscale extraction</li>
+          <li xml:lang="it">Estrazione Codice Fiscale</li>
+          <li>Timestamp verification</li>
+          <li xml:lang="it">Verifica timestamp</li>
+          <li>Modern GTK4 interface</li>
+          <li xml:lang="it">Interfaccia moderna GTK4</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+  
+  <categories>
+    <category>Utility</category>
+    <category>Office</category>
+  </categories>
+  
+  <keywords>
+    <keyword>p7m</keyword>
+    <keyword>cades</keyword>
+    <keyword>signature</keyword>
+    <keyword>digital signature</keyword>
+    <keyword>verify</keyword>
+    <keyword>certificate</keyword>
+    <keyword xml:lang="it">firma</keyword>
+    <keyword xml:lang="it">firma digitale</keyword>
+    <keyword xml:lang="it">verifica</keyword>
+    <keyword xml:lang="it">certificato</keyword>
+  </keywords>
+  
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  
+  <recommends>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </recommends>
+</component>
