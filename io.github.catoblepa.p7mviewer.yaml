@@ -25,7 +25,5 @@ modules:
     build-commands:
       - make install PREFIX=/app
     sources:
-      - type: file
-        path: Makefile
       - type: dir
-        path: src
+        path: ./
