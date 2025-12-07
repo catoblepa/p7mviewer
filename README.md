@@ -100,18 +100,29 @@ To add a new language:
    cd src
    xgettext --language=Python --keyword=_ --output=p7mviewer.pot p7mviewer.py signature_parser.py
    ```
-2. Create a new translation (example for French):
+2. Create a new translation (example for Italian):
    ```bash
-   mkdir -p locale/fr/LC_MESSAGES
-   msginit --input=p7mviewer.pot --locale=fr --output=locale/fr/LC_MESSAGES/io.github.catoblepa.p7mviewer.po
+   mkdir -p locale/it/LC_MESSAGES
+   msginit --input=p7mviewer.pot --locale=it --output=locale/it/LC_MESSAGES/io.github.catoblepa.p7mviewer.po
    ```
 3. Translate the strings in the newly created `.po` file.
 4. The `.mo` files are compiled automatically during the Flatpak build.
 5. Update the YAML manifest only if you add a new language.
 6. Test the translation:
    ```bash
-   LANGUAGE=fr python3 p7mviewer.py
+   LANGUAGE=it python3 p7mviewer.py
    ```
+
+To update existing translations after modifying the code:
+
+```bash
+cd src
+# Update the POT template first
+xgettext --language=Python --keyword=_ --output=p7mviewer.pot p7mviewer.py signature_parser.py
+# Merge changes into existing translations (example for Italian)
+msgmerge --update locale/it/LC_MESSAGES/io.github.catoblepa.p7mviewer.po p7mviewer.pot
+# Repeat for other languages (de, es, fr, etc.)
+```
 
 ## License
 
