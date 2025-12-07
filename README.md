@@ -104,7 +104,7 @@ To add support for a new language:
 1. **Update the POT template** with the latest strings:
 	 ```bash
 	 cd src
-	 xgettext --language=Python --keyword=_ --output=p7mviewer.pot p7mviewer.py
+	 xgettext --language=Python --keyword=_ --output=p7mviewer.pot p7mviewer.py signature_parser.py
 	 ```
 
 2. **Create a new translation** (example for French):

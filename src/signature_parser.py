@@ -190,7 +190,7 @@ def stampa_risultati(risultati):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print(_('Usage: python estrai_firme.py file.p7m'))
+        print(_('Usage: python signature_parser.py file.p7m'))
         sys.exit(1)
     else:
         with open(sys.argv[1], 'rb') as f:
