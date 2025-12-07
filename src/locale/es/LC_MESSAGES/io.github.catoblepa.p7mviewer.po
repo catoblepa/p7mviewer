@@ -1,17 +1,17 @@
-# Italian translations for p package.
-# Copyright (C) 2025 THE p'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the p package.
+# Spanish translations for p7mviewer package.
+# Copyright (C) 2025 THE p7mviewer's COPYRIGHT HOLDER
+# This file is distributed under the same license as the p7mviewer package.
 # Davide <davide@catoblepa.org>, 2025.
-#
+
 msgid ""
 msgstr ""
-"Project-Id-Version: p 7mviewer\n"
+"Project-Id-Version: p7mviewer\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-07 11:12+0100\n"
-"PO-Revision-Date: 2025-12-07 11:39+0100\n"
+"PO-Revision-Date: 2025-12-07 11:52+0100\n"
 "Last-Translator: Davide Truffa <davide@catoblepa.org>\n"
-"Language-Team: Italian\n"
-"Language: it\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,111 +19,111 @@ msgstr ""
 
 #: p7mviewer.py:78
 msgid "📁 Select file"
-msgstr "📁 Seleziona file"
+msgstr "📁 Seleccionar archivo"
 
 #: p7mviewer.py:80
 msgid "Select a P7M file to verify"
-msgstr "Seleziona un file P7M da verificare"
+msgstr "Selecciona un archivo P7M para verificar"
 
 #: p7mviewer.py:83
 msgid "📄 View content"
-msgstr "📄 Visualizza contenuto"
+msgstr "📄 Ver contenido"
 
 #: p7mviewer.py:86
 msgid "Open the original document extracted from the signed file"
-msgstr "Apri il documento originale estratto dal file firmato"
+msgstr "Abrir el documento original extraído del archivo firmado"
 
 #: p7mviewer.py:107 p7mviewer.py:221 p7mviewer.py:222 p7mviewer.py:285
 msgid "No file selected"
-msgstr "Nessun file selezionato"
+msgstr "No se ha seleccionado ningún archivo"
 
 #: p7mviewer.py:133
 msgid "DIGITAL SIGNATURES:"
-msgstr "FIRME DIGITALI:"
+msgstr "FIRMAS DIGITALES:"
 
 #: p7mviewer.py:170 p7mviewer.py:241
 msgid "Select a .p7m file to verify"
-msgstr "Seleziona un file .p7m da verificare"
+msgstr "Selecciona un archivo .p7m para verificar"
 
 #: p7mviewer.py:170
 msgid "Click on"
-msgstr "Clicca su"
+msgstr "Haz clic en"
 
 #: p7mviewer.py:170
 msgid "Select file"
-msgstr "Seleziona file"
+msgstr "Seleccionar archivo"
 
 #: p7mviewer.py:170
 msgid "to start"
-msgstr "per cominciare"
+msgstr "para comenzar"
 
 #: p7mviewer.py:210 p7mviewer.py:221
 msgid "File open error"
-msgstr "Errore apertura file"
+msgstr "Error al abrir el archivo"
 
 #: p7mviewer.py:210 p7mviewer.py:211
 msgid "File not accessible"
-msgstr "File non accessibile"
+msgstr "Archivo no accesible"
 
 #: p7mviewer.py:211 p7mviewer.py:222 p7mviewer.py:357 signature_parser.py:132
 msgid "Error"
-msgstr "Errore"
+msgstr "Error"
 
 #: p7mviewer.py:245
 msgid "Digitally signed files (.p7m)"
-msgstr "File firmati digitalmente (.p7m)"
+msgstr "Archivos firmados digitalmente (.p7m)"
 
 #: p7mviewer.py:251
 msgid "All files"
-msgstr "Tutti i file"
+msgstr "Todos los archivos"
 
 #: p7mviewer.py:269
 msgid "File selection error"
-msgstr "Errore selezione file"
+msgstr "Error al seleccionar el archivo"
 
 #: p7mviewer.py:339
 msgid "Verification completed successfully"
-msgstr "Verifica completata con successo"
+msgstr "Verificación completada correctamente"
 
 #: p7mviewer.py:347
 msgid "Verification error"
-msgstr "Errore nella verifica"
+msgstr "Error de verificación"
 
 #: p7mviewer.py:365
 msgid "Unknown"
-msgstr "Sconosciuto"
+msgstr "Desconocido"
 
 #: p7mviewer.py:396 signature_parser.py:117
 msgid "Tax Code"
-msgstr "Codice Fiscale"
+msgstr "Código fiscal"
 
 #: p7mviewer.py:397 signature_parser.py:118
 msgid "Organization"
-msgstr ""
+msgstr "Organización"
 
 #: p7mviewer.py:398 signature_parser.py:139
 msgid "Signature date and time"
-msgstr "Data e ora firma"
+msgstr "Fecha y hora de la firma"
 
 #: p7mviewer.py:399 signature_parser.py:144 signature_parser.py:146
 msgid "Signature valid at signing time"
-msgstr "Firma valida al momento"
+msgstr "Firma válida en el momento de la firma"
 
 #: p7mviewer.py:400 signature_parser.py:119
 msgid "Valid from"
-msgstr "Validità dal"
+msgstr "Válido desde"
 
 #: p7mviewer.py:401 signature_parser.py:120
 msgid "Valid until"
-msgstr "Validità al"
+msgstr "Válido hasta"
 
 #: p7mviewer.py:402 signature_parser.py:121
 msgid "Certificate issued by"
-msgstr "Certificato emesso da"
+msgstr "Certificado emitido por"
 
 #: p7mviewer.py:429
 msgid "No digital signature found in file"
-msgstr "Nessuna firma digitale trovata nel file"
+msgstr "No se encontró firma digital en el archivo"
 
 #: p7mviewer.py:443
 msgid "signature"
@@ -131,79 +131,79 @@ msgstr "firma"
 
 #: p7mviewer.py:443
 msgid "signatures"
-msgstr "firme"
+msgstr "firmas"
 
 #: p7mviewer.py:444
 msgid "Total"
-msgstr "Totale"
+msgstr "Total"
 
 #: p7mviewer.py:444
 msgid "verified"
-msgstr "verificata/e"
+msgstr "verificados"
 
 #: p7mviewer.py:453
 msgid "Error during signature analysis"
-msgstr "Errore durante l'analisi delle firme"
+msgstr "Error durante el análisis de la firma"
 
 #: p7mviewer.py:471
 msgid "Unable to verify file"
-msgstr "Impossibile verificare il file"
+msgstr "No se puede verificar el archivo"
 
 #: p7mviewer.py:477
 msgid "The selected file is not a valid P7M file or cannot be processed."
-msgstr "Il file selezionato non è un file P7M valido o non può essere processato."
+msgstr "El archivo seleccionado no es un archivo P7M válido o no se puede procesar."
 
 #: p7mviewer.py:486
 msgid "File is not in valid P7M/CAdES format"
-msgstr "Il file non è in formato P7M/CAdES valido"
+msgstr "El archivo no está en formato P7M/CAdES válido"
 
 #: p7mviewer.py:488
 msgid "Technical details"
-msgstr "Dettagli tecnici"
+msgstr "Detalles técnicos"
 
 #: p7mviewer.py:523
 msgid "File opening error"
-msgstr "Errore apertura file"
+msgstr "Error al abrir el archivo"
 
 #: p7mviewer.py:527
 msgid "Extracted file no longer exists"
-msgstr "Il file estratto non esiste più"
+msgstr "El archivo extraído ya no existe"
 
 #: p7mviewer.py:530
 msgid "No extracted file available"
-msgstr "Nessun file estratto disponibile"
+msgstr "No hay archivo extraído disponible"
 
 #: signature_parser.py:98
 msgid "Not present"
-msgstr "Non presente"
+msgstr "No presente"
 
 #: signature_parser.py:116
 msgid "Identity"
-msgstr "Identità"
+msgstr "Identidad"
 
 #: signature_parser.py:126 signature_parser.py:128 signature_parser.py:130
 msgid "Certificate status"
-msgstr "Stato certificato"
+msgstr "Estado del certificado"
 
 #: signature_parser.py:126
 msgid "Expired"
-msgstr "Scaduto"
+msgstr "Caducado"
 
 #: signature_parser.py:128
 msgid "Not yet valid"
-msgstr "Non ancora valido"
+msgstr "Aún no válido"
 
 #: signature_parser.py:130
 msgid "Valid"
-msgstr "Valido"
+msgstr "Válido"
 
 #: signature_parser.py:132
 msgid "Certificate not found for this signature."
-msgstr "Certificato non trovato per questa firma."
+msgstr "Certificado no encontrado para esta firma."
 
 #: signature_parser.py:144
 msgid "Yes"
-msgstr "Sì"
+msgstr "Sí"
 
 #: signature_parser.py:146
 msgid "No"
@@ -211,8 +211,8 @@ msgstr "No"
 
 #: signature_parser.py:146
 msgid "certificate not valid at signature date"
-msgstr "certificato non valido alla data della firma"
+msgstr "certificado no válido en la fecha de firma"
 
 #: signature_parser.py:193
 msgid "Usage: python signature_parser.py file.p7m"
-msgstr "Uso: python signature_parser.py file.p7m"
+msgstr "Uso: python signature_parser.py archivo.p7m"
