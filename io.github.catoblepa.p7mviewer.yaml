@@ -20,7 +20,7 @@ modules:
       - type: archive
         url: https://files.pythonhosted.org/packages/source/a/asn1crypto/asn1crypto-1.5.1.tar.gz
         sha256: 13ae38502be632115abf8a24cbe5f4da52e3b5231990aff31123c805306ccb9c
-  - name: app
+  - name: p7mviewer
     buildsystem: simple
     build-commands:
       - install -Dm755 p7mviewer.py /app/bin/p7mviewer.py
