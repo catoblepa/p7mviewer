@@ -27,10 +27,12 @@ modules:
       - install -Dm644 io.github.catoblepa.p7mviewer.svg /app/share/icons/hicolor/scalable/apps/io.github.catoblepa.p7mviewer.svg
       - install -Dm644 io.github.catoblepa.p7mviewer.desktop /app/share/applications/io.github.catoblepa.p7mviewer.desktop
       - install -Dm644 io.github.catoblepa.p7mviewer.metainfo.xml /app/share/metainfo/io.github.catoblepa.p7mviewer.metainfo.xml
-      - install -Dm644 io.github.catoblepa.p7mviewer.mo /app/share/locale/de/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
-      - install -Dm644 io.github.catoblepa.p7mviewer.mo /app/share/locale/es/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
-      - install -Dm644 io.github.catoblepa.p7mviewer.mo /app/share/locale/fr/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
-      - install -Dm644 io.github.catoblepa.p7mviewer.mo /app/share/locale/it/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
+      # Compile and install locale files
+      - bash ./build-locales.sh
+      - install -Dm644 de/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo /app/share/locale/de/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
+      - install -Dm644 es/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo /app/share/locale/es/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
+      - install -Dm644 fr/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo /app/share/locale/fr/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
+      - install -Dm644 it/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo /app/share/locale/it/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
     sources:
       - type: file
         path: src/p7mviewer.py
@@ -43,10 +45,7 @@ modules:
       - type: file
         path: src/io.github.catoblepa.p7mviewer.metainfo.xml
       - type: file
-        path: src/locale/de/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
-      - type: file
-        path: src/locale/es/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
-      - type: file
-        path: src/locale/fr/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
-      - type: file
-        path: src/locale/it/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
+        path: build-locales.sh
+      # Locale files (PO sources)
+      - type: dir
+        path: src/locale
