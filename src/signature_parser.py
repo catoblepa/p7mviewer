@@ -6,6 +6,19 @@ from asn1crypto import cms, x509
 import sys
 import base64
 from datetime import datetime
+import gettext
+import os
+
+# Setup gettext per localizzazione
+APP_ID = 'io.github.catoblepa.p7mviewer'
+# Use system locale directory for Flatpak, fallback to local for development
+if os.path.exists('/app/share/locale'):
+    LOCALE_DIR = '/app/share/locale'
+else:
+    LOCALE_DIR = os.path.join(os.path.dirname(__file__), 'locale')
+gettext.bindtextdomain(APP_ID, LOCALE_DIR)
+gettext.textdomain(APP_ID)
+_ = gettext.gettext
 
 def rileva_formato_p7m(data):
     """
@@ -82,7 +95,7 @@ def estrai_organization(subject):
     org = subject.native.get('organization_name', '')
     if not org:
         org = subject.native.get('organizational_unit_name', '')
-    return org if org else 'Non presente'
+    return org if org else _('Not present')
 
 def mostra_info_firma(signer, cert_list):
     """
@@ -100,37 +113,37 @@ def mostra_info_firma(signer, cert_list):
         not_before = validity['not_before'].native
         not_after = validity['not_after'].native
         
-        info['Identità'] = estrai_nome_cognome(subject)
-        info['Codice Fiscale'] = estrai_codice_fiscale(subject)
-        info['Organizzazione'] = estrai_organization(subject)
-        info['Validità dal'] = not_before.strftime('%d/%m/%Y %H:%M:%S') if isinstance(not_before, datetime) else str(not_before)
-        info['Validità al'] = not_after.strftime('%d/%m/%Y %H:%M:%S') if isinstance(not_after, datetime) else str(not_after)
-        info['Certificato emesso da'] = cert.issuer.human_friendly
+        info[_('Identity')] = estrai_nome_cognome(subject)
+        info[_('Tax Code')] = estrai_codice_fiscale(subject)
+        info[_('Organization')] = estrai_organization(subject)
+        info[_('Valid from')] = not_before.strftime('%d/%m/%Y %H:%M:%S') if isinstance(not_before, datetime) else str(not_before)
+        info[_('Valid until')] = not_after.strftime('%d/%m/%Y %H:%M:%S') if isinstance(not_after, datetime) else str(not_after)
+        info[_('Certificate issued by')] = cert.issuer.human_friendly
         
         # Verifica se il certificato è scaduto
         now = datetime.now(not_after.tzinfo) if hasattr(not_after, 'tzinfo') and not_after.tzinfo else datetime.now()
         if now > not_after:
-            info['Stato certificato'] = '⚠️ Scaduto'
+            info[_('Certificate status')] = f'⚠️ {_("Expired")}'
         elif now < not_before:
-            info['Stato certificato'] = '⚠️ Non ancora valido'
+            info[_('Certificate status')] = f'⚠️ {_("Not yet valid")}'
         else:
-            info['Stato certificato'] = '✓ Valido'
+            info[_('Certificate status')] = f'✓ {_("Valid")}'
     else:
-        info['Errore'] = "Certificato non trovato per questa firma."
+        info[_('Error')] = _('Certificate not found for this signature.')
     
     # Estrai data e ora della firma (signing time)
     if 'signed_attrs' in signer and signer['signed_attrs'] is not None:
         for attr in signer['signed_attrs']:
             if attr['type'].native == 'signing_time':
                 signing_time = attr['values'].native[0]
-                info['Data e ora firma'] = signing_time.strftime('%d/%m/%Y %H:%M:%S') if isinstance(signing_time, datetime) else str(signing_time)
+                info[_('Signature date and time')] = signing_time.strftime('%d/%m/%Y %H:%M:%S') if isinstance(signing_time, datetime) else str(signing_time)
                 
                 # Verifica se la firma era valida al momento della sottoscrizione
                 if cert and isinstance(signing_time, datetime) and isinstance(not_before, datetime) and isinstance(not_after, datetime):
                     if not_before <= signing_time <= not_after:
-                        info['Firma valida al momento'] = '✓ Sì'
+                        info[_('Signature valid at signing time')] = f'✓ {_("Yes")}'
                     else:
-                        info['Firma valida al momento'] = '✗ No (certificato non valido alla data di firma)'
+                        info[_('Signature valid at signing time')] = f'✗ {_("No")} ({_("certificate not valid at signature date")})'
     
     return info
 
@@ -177,7 +190,7 @@ def stampa_risultati(risultati):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Uso: python estrai_firme.py file.p7m")
+        print(_('Usage: python estrai_firme.py file.p7m'))
         sys.exit(1)
     else:
         with open(sys.argv[1], 'rb') as f:

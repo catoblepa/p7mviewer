@@ -92,6 +92,106 @@ export P7MVIEWER_DEBUG=true
 python3 src/p7mviewer.py
 ```
 
+## Localizzazione
+
+L'applicazione supporta l'internazionalizzazione (i18n) tramite gettext. Attualmente sono disponibili le traduzioni per:
+- **Inglese** (lingua predefinita)
+- **Italiano**
+
+### Aggiungere una nuova traduzione
+
+Per aggiungere il supporto per una nuova lingua:
+
+1. **Aggiorna il template POT** con le stringhe più recenti:
+   ```bash
+   cd src
+   xgettext --language=Python --keyword=_ --output=p7mviewer.pot p7mviewer.py
+   ```
+
+2. **Crea una nuova traduzione** (esempio per il francese):
+   ```bash
+   mkdir -p locale/fr/LC_MESSAGES
+   msginit --input=p7mviewer.pot --locale=fr --output=locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
+   ```
+
+3. **Traduci le stringhe** nel file `.po` appena creato:
+   ```bash
+   # Modifica il file con un editor di testo o usa strumenti come Poedit
+   nano locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
+   ```
+
+4. **Compila la traduzione** in formato binario:
+   ```bash
+   msgfmt locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po \
+          -o locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
+   ```
+
+5. **Aggiorna il manifest Flatpak** per includere la nuova traduzione in `com.github.catoblepa.p7mviewer.yaml`:
+   ```yaml
+   build-commands:
+     # ... altri comandi ...
+     - install -Dm644 locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo /app/share/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
+   sources:
+     # ... altri sources ...
+     - type: file
+       path: src/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
+   ```
+
+6. **Testa la traduzione** impostando la variabile d'ambiente:
+   ```bash
+   LANGUAGE=fr python3 p7mviewer.py
+   ```
+
+## Localizzazione
+
+L'applicazione supporta l'internazionalizzazione (i18n) tramite gettext. Attualmente sono disponibili le traduzioni per:
+- **Inglese** (lingua predefinita)
+- **Italiano**
+
+### Aggiungere una nuova traduzione
+
+Per aggiungere il supporto per una nuova lingua:
+
+1. **Aggiorna il template POT** con le stringhe più recenti:
+   ```bash
+   cd src
+   xgettext --language=Python --keyword=_ --output=p7mviewer.pot p7mviewer.py
+   ```
+
+2. **Crea una nuova traduzione** (esempio per il francese):
+   ```bash
+   mkdir -p locale/fr/LC_MESSAGES
+   msginit --input=p7mviewer.pot --locale=fr --output=locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
+   ```
+
+3. **Traduci le stringhe** nel file `.po` appena creato:
+   ```bash
+   # Modifica il file con un editor di testo o usa strumenti come Poedit
+   nano locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
+   ```
+
+4. **Compila la traduzione** in formato binario:
+   ```bash
+   msgfmt locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po \
+          -o locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
+   ```
+
+5. **Aggiorna il manifest Flatpak** per includere la nuova traduzione in `com.github.catoblepa.p7mviewer.yaml`:
+   ```yaml
+   build-commands:
+     # ... altri comandi ...
+     - install -Dm644 locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo /app/share/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
+   sources:
+     # ... altri sources ...
+     - type: file
+       path: src/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
+   ```
+
+6. **Testa la traduzione** impostando la variabile d'ambiente:
+   ```bash
+   LANGUAGE=fr python3 p7mviewer.py
+   ```
+
 ## Licenza
 
 [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)

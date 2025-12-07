@@ -17,3 +17,6 @@ Thumbs.db
 *~
 *.swp
 *.bak
+
+#  Translation files
+*.mo
