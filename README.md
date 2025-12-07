@@ -91,7 +91,7 @@ python3 src/p7mviewer.py
 
 ## Localization
 
-The application supports automatic translation via gettext. Translations are generated automatically during the Flatpak build using the `build-locales.sh` script.
+The application supports automatic translation via gettext. Translations are generated automatically during the Flatpak build.
 
 To add a new language:
 

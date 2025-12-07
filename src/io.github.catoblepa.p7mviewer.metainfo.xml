@@ -65,21 +65,15 @@
   </screenshots>
   
   <releases>
-    <release version="1.0.0" date="2025-12-06">
+    <release version="1.1.0" date="2025-12-07">
       <description>
         <p>Initial release</p>
-        <p xml:lang="it">Rilascio iniziale</p>
+        <p xml:lang="it">P7M v1.1.0</p>
         <ul>
           <li>P7M/CAdES signature verification</li>
           <li xml:lang="it">Verifica firme P7M/CAdES</li>
           <li>Multiple signature support</li>
           <li xml:lang="it">Supporto firme multiple</li>
-          <li>Codice Fiscale extraction</li>
-          <li xml:lang="it">Estrazione Codice Fiscale</li>
-          <li>Timestamp verification</li>
-          <li xml:lang="it">Verifica timestamp</li>
-          <li>Modern GTK4 interface</li>
-          <li xml:lang="it">Interfaccia moderna GTK4</li>
         </ul>
       </description>
     </release>
@@ -97,7 +91,6 @@
     <keyword>digital signature</keyword>
     <keyword>verify</keyword>
     <keyword>certificate</keyword>
-    <keyword xml:lang="it">firma</keyword>
     <keyword xml:lang="it">firma digitale</keyword>
     <keyword xml:lang="it">verifica</keyword>
     <keyword xml:lang="it">certificato</keyword>
