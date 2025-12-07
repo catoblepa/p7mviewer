@@ -22,27 +22,27 @@ _ = gettext.gettext
 
 def rileva_formato_p7m(data):
     """
-    Rileva se il file P7M è in formato Base64, DER o PEM.
-    Restituisce: ('base64', decoded_data) o ('der', data) o ('pem', data)
+    Detect if the P7M file is in Base64, DER or PEM format.
+    Returns: ('base64', decoded_data) or ('der', data) or ('pem', data)
     """
-    # Controlla se è Base64
+    # Check if it's Base64
     try:
-        # Rimuovi whitespace e newline
+        # Remove whitespace and newlines
         data_clean = data.strip()
         if isinstance(data_clean, bytes):
             data_clean = data_clean.decode('ascii', errors='ignore').strip()
-        # Prova a decodificare da base64
+        # Try to decode from base64
         decoded = base64.b64decode(data_clean)
-        # Verifica che il decoded sia valido ricodificandolo
+        # Verify that the decoded data is valid by re-encoding it
         reencoded = base64.b64encode(decoded).decode('ascii').strip()
         if reencoded.replace('\n', '').replace('\r', '') == data_clean.replace('\n', '').replace('\r', ''):
             return ('base64', decoded)
     except Exception:
         pass
     
-    # Se non è base64, è probabilmente DER o PEM
+    # If it's not base64, it's probably DER or PEM
     if isinstance(data, bytes):
-        # Controlla se inizia con PEM header
+        # Check if it starts with PEM header
         if b'-----BEGIN' in data[:100]:
             return ('pem', data)
         else:
@@ -65,7 +65,7 @@ def cerca_certificato_per_serial(cert_list, serial):
 
 def estrai_nome_cognome(subject):
     """
-    Estrae il nome completo dal subject del certificato.
+    Extract the full name from the certificate subject.
     """
     cn = subject.native.get('common_name', '')
     gn = subject.native.get('given_name', '')
@@ -76,21 +76,21 @@ def estrai_nome_cognome(subject):
 
 def estrai_codice_fiscale(subject):
     """
-    Estrae il Codice Fiscale dal subject del certificato.
+    Extract the Tax Code from the certificate subject.
     """
-    # Prova serial_number
+    # Try serial_number
     cf = subject.native.get('serial_number', '')
     if cf:
-        # Rimuovi prefissi tipo 'TINIT-' o simili
+        # Remove prefixes like 'TINIT-' or similar
         if ':' in cf:
             cf = cf.split(':')[-1]
         return cf
-    # Fallback a dn_qualifier
+    # Fallback to dn_qualifier
     return subject.native.get('dn_qualifier', '')
 
 def estrai_organization(subject):
     """
-    Estrae l'organizzazione dal subject del certificato.
+    Extract the organization from the certificate subject.
     """
     org = subject.native.get('organization_name', '')
     if not org:
@@ -99,7 +99,7 @@ def estrai_organization(subject):
 
 def mostra_info_firma(signer, cert_list):
     """
-    Estrae e ritorna informazioni del firmatario come dizionario.
+    Extract and return signer information as a dictionary.
     """
     info = {}
     sid = signer['sid']
@@ -120,7 +120,7 @@ def mostra_info_firma(signer, cert_list):
         info[_('Valid until')] = not_after.strftime('%d/%m/%Y %H:%M:%S') if isinstance(not_after, datetime) else str(not_after)
         info[_('Certificate issued by')] = cert.issuer.human_friendly
         
-        # Verifica se il certificato è scaduto
+        # Check if the certificate is expired
         now = datetime.now(not_after.tzinfo) if hasattr(not_after, 'tzinfo') and not_after.tzinfo else datetime.now()
         if now > not_after:
             info[_('Certificate status')] = f'⚠️ {_("Expired")}'
@@ -131,14 +131,14 @@ def mostra_info_firma(signer, cert_list):
     else:
         info[_('Error')] = _('Certificate not found for this signature.')
     
-    # Estrai data e ora della firma (signing time)
+    # Extract signature date and time (signing time)
     if 'signed_attrs' in signer and signer['signed_attrs'] is not None:
         for attr in signer['signed_attrs']:
             if attr['type'].native == 'signing_time':
                 signing_time = attr['values'].native[0]
                 info[_('Signature date and time')] = signing_time.strftime('%d/%m/%Y %H:%M:%S') if isinstance(signing_time, datetime) else str(signing_time)
                 
-                # Verifica se la firma era valida al momento della sottoscrizione
+                # Check if the signature was valid at the time of signing
                 if cert and isinstance(signing_time, datetime) and isinstance(not_before, datetime) and isinstance(not_after, datetime):
                     if not_before <= signing_time <= not_after:
                         info[_('Signature valid at signing time')] = f'✓ {_("Yes")}'
@@ -149,13 +149,13 @@ def mostra_info_firma(signer, cert_list):
 
 def analizza_busta(data, livello=1):
     """
-    Analizza una busta P7M (anche annidata) ed estrae informazioni sulle firme.
-    Supporta automaticamente formato Base64, DER e PEM.
+    Analyze a P7M envelope (including nested) and extract signature information.
+    Automatically supports Base64, DER and PEM format.
     """
     risultati = []
     
-    # Rileva e converte formato se necessario
-    if livello == 1:  # Solo al primo livello
+    # Detect and convert format if necessary
+    if livello == 1:  # Only at first level
         formato, data_convertita = rileva_formato_p7m(data)
         data = data_convertita
     
@@ -170,7 +170,7 @@ def analizza_busta(data, livello=1):
                 info_firma['firmatario_idx'] = idx
                 info_firma['livello_busta'] = livello
                 risultati.append(info_firma)
-            # Cerca dati annidati (content)
+            # Look for nested data (content)
             encap_content = signed_data['encap_content_info']['content']
             if encap_content is not None:
                 try:

@@ -35,7 +35,7 @@ gettext.bindtextdomain(APP_ID, LOCALE_DIR)
 gettext.textdomain(APP_ID)
 _ = gettext.gettext
 
-# Debug mode: controllabile via variabile d'ambiente P7MVIEWER_DEBUG=true
+# Debug mode: controllable via environment variable P7MVIEWER_DEBUG=true
 DEBUG = os.getenv('P7MVIEWER_DEBUG', 'false').lower() in ('true', '1', 'yes')
 
 def debug_print(*args, **kwargs):
@@ -48,15 +48,15 @@ class FirmeApp(Gtk.Application):
             application_id="io.github.catoblepa.p7mviewer",
             flags=Gio.ApplicationFlags.HANDLES_OPEN
         )
-        debug_print("[DEBUG] Applicazione inizializzata")
+        debug_print("[DEBUG] Application initialized")
         
     def do_activate(self):
-        debug_print("[DEBUG] do_activate chiamato")
+        debug_print("[DEBUG] do_activate called")
         win = FirmeWindow(self)
         win.present()
 
     def do_open(self, files, n_files, hint):
-        debug_print(f"[DEBUG] do_open chiamato con {n_files} file")
+        debug_print(f"[DEBUG] do_open called with {n_files} file(s)")
         file_path = files[0].get_path() if n_files > 0 else None
         win = FirmeWindow(self, file_path)
         win.present()
@@ -64,7 +64,7 @@ class FirmeApp(Gtk.Application):
 class FirmeWindow(Gtk.ApplicationWindow):
     def __init__(self, app, file_p7m=None):
         super().__init__(application=app)
-        debug_print("[DEBUG] Creazione finestra principale")
+        debug_print("[DEBUG] Creating main window")
         self.set_title("P7M Viewer")
         self.set_icon_name("io.github.catoblepa.p7mviewer")
         self.file_estratto = None
@@ -174,25 +174,25 @@ class FirmeWindow(Gtk.ApplicationWindow):
 
         self.aggiorna_ui()
 
-        # --- Drag and Drop support per GTK4 ---
-        debug_print("[DEBUG] Inizializzo DropTarget per drag and drop")
+        # --- Drag and Drop support for GTK4 ---
+        debug_print("[DEBUG] Initializing DropTarget for drag and drop")
         drop_target = Gtk.DropTarget.new(str, Gdk.DragAction.COPY)
         drop_target.set_gtypes([str])
         drop_target.connect("drop", self.on_file_drop)
         self.add_controller(drop_target)
 
         if file_p7m:
-            debug_print(f"[DEBUG] File passato all'avvio: {file_p7m}")
+            debug_print(f"[DEBUG] File passed at startup: {file_p7m}")
             self.verifica_firma(file_p7m)
 
     def on_file_drop(self, drop_target, value, x, y):
-        debug_print(f"[DEBUG] Evento drop ricevuto: value={value!r} (type={type(value)})")
+        debug_print(f"[DEBUG] Drop event received: value={value!r} (type={type(value)})")
         if not value:
-            debug_print("[DEBUG] Nessun valore ricevuto nel drop")
+            debug_print("[DEBUG] No value received in drop")
             return False
         
         uris = value.strip().splitlines()
-        debug_print(f"[DEBUG] URIs estratte dal drop: {uris}")
+        debug_print(f"[DEBUG] URIs extracted from drop: {uris}")
         
         for uri in uris:
             # Accetta sia file:// URI che percorsi assoluti
@@ -201,10 +201,10 @@ class FirmeWindow(Gtk.ApplicationWindow):
             else:
                 file_path = uri
             
-            debug_print(f"[DEBUG] file_path estratto: {file_path}")
+            debug_print(f"[DEBUG] file_path extracted: {file_path}")
             
             if not os.access(file_path, os.R_OK):
-                debug_print(f"[DEBUG] File non accessibile: {file_path}")
+                debug_print(f"[DEBUG] File not accessible: {file_path}")
                 self.file_verificato = True
                 self.aggiorna_ui()
                 self.label_info_file.set_markup(f'<span size="small" color="#c62828">❌ {_("File open error")}: {_("File not accessible")}</span>')
@@ -224,7 +224,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         return True
 
     def aggiorna_ui(self):
-        debug_print(f"[DEBUG] aggiorna_ui chiamato, file_verificato={self.file_verificato}")
+        debug_print(f"[DEBUG] aggiorna_ui called, file_verificato={self.file_verificato}")
         for child in list(self.vbox):
             self.vbox.remove(child)
         if not self.file_verificato:
@@ -236,7 +236,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
             self.vbox.append(self.scrolled)
 
     def on_file_chooser_clicked(self, widget):
-        debug_print("[DEBUG] Pulsante 'Apri' cliccato, apro file dialog")
+        debug_print("[DEBUG] 'Open' button clicked, opening file dialog")
         file_dialog = Gtk.FileDialog()
         file_dialog.set_title(_("Select a .p7m file to verify"))
         
@@ -259,13 +259,13 @@ class FirmeWindow(Gtk.ApplicationWindow):
                 file = dialog.open_finish(result)
                 if file:
                     file_p7m = file.get_path()
-                    debug_print(f"[DEBUG] File selezionato: {file_p7m}")
+                    debug_print(f"[DEBUG] File selected: {file_p7m}")
                     self.pulisci_sezioni()
                     self.verifica_firma(file_p7m)
             except GLib.Error as e:
-                # Utente ha annullato la selezione
+                # User cancelled selection
                 if e.code != 2:  # GTK_DIALOG_ERROR_DISMISSED
-                    debug_print(f"[DEBUG] Errore apertura file: {e}")
+                    debug_print(f"[DEBUG] File open error: {e}")
                     self.label_info_file.set_markup(f'<span size="small" color="#c62828">❌ {_("File selection error")}: {str(e)[:100]}</span>')
                 self.file_verificato = False
                 self.aggiorna_ui()
@@ -273,7 +273,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         file_dialog.open(self, None, on_file_selected)
 
     def pulisci_listbox(self):
-        """Helper per pulire tutti i widget dalla listbox"""
+        """Helper to clear all widgets from the listbox"""
         while True:
             row = self.firme_listbox.get_row_at_index(0)
             if row is None:
@@ -281,25 +281,25 @@ class FirmeWindow(Gtk.ApplicationWindow):
             self.firme_listbox.remove(row)
     
     def pulisci_sezioni(self):
-        debug_print("[DEBUG] pulisci_sezioni chiamato")
+        debug_print("[DEBUG] pulisci_sezioni called")
         self.label_info_file.set_markup(f'<span size="small" color="#999999">🔒 {_("No file selected")}</span>')
         self.status_badge.set_visible(False)
         self.pulisci_listbox()
 
     def verifica_firma(self, file_p7m):
-        debug_print(f"[DEBUG] verifica_firma chiamato con file: {file_p7m}")
+        debug_print(f"[DEBUG] verifica_firma called with file: {file_p7m}")
         self.pulisci_sezioni()
         self.btn_apri_estratto.set_sensitive(False)
         self.file_estratto = None
         self.file_verificato = False
         self.aggiorna_ui()
 
-        # Crea una directory nella cache accessibile dal sandbox
+        # Create a cache directory accessible from the sandbox
         cache_dir = os.path.join(GLib.get_user_cache_dir(), 'p7mviewer')
         os.makedirs(cache_dir, exist_ok=True)
-        debug_print(f"[DEBUG] Directory cache: {cache_dir}")
+        debug_print(f"[DEBUG] Cache directory: {cache_dir}")
 
-        # Nome file estratto senza .p7m
+        # Extracted filename without .p7m
         base_path = Path(file_p7m)
         base_name = base_path.name
         while base_name.lower().endswith('.p7m'):
@@ -313,13 +313,13 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.label_info_file.set_markup(file_markup)
 
         try:
-            # Prima analizza quanti livelli di firma ci sono
+            # First analyze how many signature levels there are
             with open(file_p7m, 'rb') as f:
                 data = f.read()
             firme_info = analizza_busta(data)
             
             if not firme_info:
-                # Nessuna firma trovata
+                # No signature found
                 self.file_verificato = True
                 self.aggiorna_ui()
                 self.label_info_file.set_markup(file_markup)
@@ -327,15 +327,15 @@ class FirmeWindow(Gtk.ApplicationWindow):
                 self.status_badge.set_visible(True)
                 return
             
-            # Determina il numero massimo di livelli di firma
+            # Determine the maximum number of signature levels
             max_livello = max(info.get('livello_busta', 1) for info in firme_info)
-            debug_print(f"[DEBUG] Trovati {len(firme_info)} firmatari su {max_livello} livelli di firma")
+            debug_print(f"[DEBUG] Found {len(firme_info)} signers on {max_livello} signature level(s)")
             
-            # Estrai ricorsivamente per ogni livello di firma
+            # Extract recursively for each signature level
             file_corrente = file_p7m
             for livello in range(1, max_livello + 1):
                 file_output = os.path.join(cache_dir, f"{base_name}_level{livello}")
-                debug_print(f"[DEBUG] Estrazione livello {livello}: {file_corrente} -> {file_output}")
+                debug_print(f"[DEBUG] Extracting level {livello}: {file_corrente} -> {file_output}")
                 
                 cmd = [
                     "openssl", "smime", "-verify",
@@ -346,49 +346,49 @@ class FirmeWindow(Gtk.ApplicationWindow):
                 ]
                 
                 result = subprocess.run(cmd, capture_output=True, text=True)
-                debug_print(f"[DEBUG] Livello {livello} - Return code: {result.returncode}")
+                debug_print(f"[DEBUG] Level {livello} - Return code: {result.returncode}")
                 
                 if result.returncode != 0:
-                    # Errore nell'estrazione
+                    # Error during extraction
                     self.file_verificato = True
                     self.aggiorna_ui()
                     self.label_info_file.set_markup(file_markup)
                     self.status_badge.set_markup(f'<span size="small" bgcolor="#ffebee" color="#c62828"> ❌ {_("Verification error")} </span>')
                     self.status_badge.set_visible(True)
                     self.mostra_errore_verifica(result.stderr)
-                    debug_print(f"[DEBUG] Errore openssl al livello {livello}: {result.stderr}")
+                    debug_print(f"[DEBUG] OpenSSL error at level {livello}: {result.stderr}")
                     return
                 
-                # Prepara per il prossimo livello
+                # Prepare for next level
                 file_corrente = file_output
             
-            # L'ultimo file estratto è quello finale
+            # The last extracted file is the final one
             self.file_estratto = file_corrente
-            debug_print(f"[DEBUG] File estratto finale impostato a: {self.file_estratto}")
+            debug_print(f"[DEBUG] Final extracted file set to: {self.file_estratto}")
             self.btn_apri_estratto.set_sensitive(True)
             self.file_verificato = True
             self.aggiorna_ui()
             
-            # Mostra badge successo
+            # Show success badge
             self.label_info_file.set_markup(file_markup)
             self.status_badge.set_markup(f'<span size="small" bgcolor="#e8f5e9" color="#2e7d32"> ✓ {_("Verification completed successfully")} </span>')
             self.status_badge.set_visible(True)
             self.mostra_info_firma(file_p7m)
             
         except Exception as e:
-            # Eccezione - mostra interfaccia con messaggio
+            # Exception - show interface with message
             self.file_verificato = True
             self.aggiorna_ui()
             self.label_info_file.set_markup(file_markup)
             self.status_badge.set_markup(f'<span size="small" bgcolor="#ffebee" color="#c62828"> ❌ {_("Error")}: {str(e)[:50]} </span>')
             self.status_badge.set_visible(True)
-            # Mostra messaggio di errore nella listbox
+            # Show error message in the listbox
             self.mostra_errore_verifica(str(e))
-            debug_print(f"[DEBUG] Eccezione in verifica_firma: {e}")
+            debug_print(f"[DEBUG] Exception in verifica_firma: {e}")
 
     def crea_expander_firma(self, info, idx):
-        """Crea un expander per una singola firma con dettagli espandibili"""
-        # Usa le chiavi tradotte come fa signature_parser.py
+        """Create an expander for a single signature with expandable details"""
+        # Use translated keys as signature_parser.py does
         identita = info.get(_('Identity'), _('Unknown'))
         stato = info.get(_('Certificate status'), '')
         
@@ -398,7 +398,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         expander.set_margin_start(8)
         expander.set_margin_end(8)
         
-        # Header sempre visibile
+        # Header always visible
         header_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         
         title_label = Gtk.Label()
@@ -413,12 +413,12 @@ class FirmeWindow(Gtk.ApplicationWindow):
         
         expander.set_label_widget(header_box)
         
-        # Contenuto espandibile (dettagli)
+        # Expandable content (details)
         details_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         details_box.set_margin_top(8)
         details_box.set_margin_start(12)
         
-        # Campi da mostrare quando espanso - usa le chiavi tradotte
+        # Fields to show when expanded - use translated keys
         campi_dettagli = [
             (_('Tax Code'), '🆔'),
             (_('Organization'), '🏢'),
@@ -443,7 +443,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         return expander
     
     def mostra_info_firma(self, file_p7m):
-        debug_print(f"[DEBUG] mostra_info_firma chiamato per file: {file_p7m}")
+        debug_print(f"[DEBUG] mostra_info_firma called for file: {file_p7m}")
         self.pulisci_listbox()
         try:
             with open(file_p7m, 'rb') as f:
@@ -451,7 +451,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
             firme_info = analizza_busta(data)
             
             if not firme_info:
-                # Messaggio quando non ci sono firme
+                # Message when there are no signatures
                 no_firme_label = Gtk.Label()
                 no_firme_label.set_markup(f'<span size="small" color="#999">⚠️  {_("No digital signature found in file")}</span>')
                 no_firme_label.set_margin_top(20)
@@ -459,12 +459,12 @@ class FirmeWindow(Gtk.ApplicationWindow):
                 self.firme_listbox.append(no_firme_label)
                 return
             
-            # Aggiungi ogni firma come expander
+            # Add each signature as expander
             for idx, info in enumerate(firme_info, 1):
                 expander = self.crea_expander_firma(info, idx)
                 self.firme_listbox.append(expander)
             
-            # Aggiungi footer con conteggio
+            # Add footer with count
             footer_label = Gtk.Label()
             n_signatures = len(firme_info)
             sig_word = _("signature") if n_signatures == 1 else _("signatures")
@@ -473,7 +473,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
             footer_label.set_margin_bottom(8)
             self.firme_listbox.append(footer_label)
             
-            debug_print(f"[DEBUG] Informazioni firma mostrate per {file_p7m}")
+            debug_print(f"[DEBUG] Signature info displayed for {file_p7m}")
         except Exception as e:
             self.pulisci_listbox()
             error_label = Gtk.Label()
@@ -481,10 +481,10 @@ class FirmeWindow(Gtk.ApplicationWindow):
             error_label.set_margin_top(20)
             error_label.set_margin_bottom(20)
             self.firme_listbox.append(error_label)
-            debug_print(f"[DEBUG] Eccezione in mostra_info_firma: {e}")
+            debug_print(f"[DEBUG] Exception in mostra_info_firma: {e}")
     
     def mostra_errore_verifica(self, errore):
-        """Mostra un messaggio di errore nella listbox delle firme"""
+        """Show an error message in the signatures listbox"""
         self.pulisci_listbox()
         
         error_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
@@ -493,7 +493,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         error_box.set_margin_start(20)
         error_box.set_margin_end(20)
         
-        # Titolo
+        # Title
         title_label = Gtk.Label()
         title_label.set_markup(f'<span size="large">❌</span>\n<span size="large" weight="bold">{_("Unable to verify file")}</span>')
         title_label.set_justify(Gtk.Justification.CENTER)
@@ -506,7 +506,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         msg_label.set_wrap(True)
         error_box.append(msg_label)
         
-        # Dettagli tecnici
+        # Technical details
         if errore:
             errore_pulito = errore.split('\n')[0] if '\n' in errore else errore
             if 'Error reading S/MIME message' in errore:
@@ -527,37 +527,37 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.firme_listbox.append(error_box)
 
     def on_apri_estratto_clicked(self, widget):
-        debug_print(f"[DEBUG] Cliccato su 'Apri file estratto'. file_estratto = {self.file_estratto}")
+        debug_print(f"[DEBUG] Clicked on 'Open extracted file'. file_estratto = {self.file_estratto}")
         if self.file_estratto:
-            debug_print(f"[DEBUG] Verifico esistenza file: {self.file_estratto}")
+            debug_print(f"[DEBUG] Checking file existence: {self.file_estratto}")
             if os.path.exists(self.file_estratto):
-                debug_print("[DEBUG] File esiste, uso Gtk.FileLauncher per aprirlo")
+                debug_print("[DEBUG] File exists, using Gtk.FileLauncher to open it")
                 try:
                     gfile = Gio.File.new_for_path(self.file_estratto)
                     launcher = Gtk.FileLauncher.new(gfile)
-                    debug_print(f"[DEBUG] FileLauncher creato per: {self.file_estratto}")
+                    debug_print(f"[DEBUG] FileLauncher created for: {self.file_estratto}")
                     
                     def on_launch_finish(launcher, result):
                         try:
                             launcher.launch_finish(result)
-                            debug_print("[DEBUG] File aperto con successo tramite portal")
+                            debug_print("[DEBUG] File opened successfully via portal")
                         except Exception as e:
-                            debug_print(f"[DEBUG] Errore apertura file: {e}")
+                            debug_print(f"[DEBUG] File open error: {e}")
                             self.label_info_file.set_markup(f'<span size="small" color="#c62828">❌ Errore apertura: {str(e)[:100]}</span>')
                     
                     launcher.launch(self, None, on_launch_finish)
                 except Exception as e:
                     self.label_info_file.set_markup(f'<span size="small" color="#c62828">❌ {_("File opening error")}: {str(e)[:100]}</span>')
-                    debug_print(f"[DEBUG] Eccezione in on_apri_estratto_clicked: {e}")
+                    debug_print(f"[DEBUG] Exception in on_apri_estratto_clicked: {e}")
             else:
-                debug_print(f"[DEBUG] File NON esiste: {self.file_estratto}")
+                debug_print(f"[DEBUG] File does NOT exist: {self.file_estratto}")
                 self.label_info_file.set_markup(f'<span size="small" color="#c62828">❌ {_("Extracted file no longer exists")}</span>')
         else:
-            debug_print("[DEBUG] file_estratto non impostato.")
+            debug_print("[DEBUG] file_estratto not set.")
             self.label_info_file.set_markup(f'<span size="small" color="#f57c00">⚠️ {_("No extracted file available")}</span>')
 
 def main():
-    debug_print("[DEBUG] main() chiamato")
+    debug_print("[DEBUG] main() called")
     app = FirmeApp()
     app.run(sys.argv)
 
