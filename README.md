@@ -1,197 +1,146 @@
 # P7M Viewer
 
-**P7M Viewer** è una semplice applicazione GTK4 per GNOME che permette di verificare file firmati digitalmente in formato `.p7m` (CAdES) e visualizzare i dettagli delle firme digitali contenute.
+**P7M Viewer** is a simple GTK4 application for GNOME that allows you to verify digitally signed files in `.p7m` (CAdES) format and view the details of the contained digital signatures.
 
-## Funzionalità
+## Features
 
-- **Apertura e verifica di file .p7m**  
-  Seleziona un file firmato digitalmente e verifica la validità della firma tramite OpenSSL.
-- **Supporto formati multipli**  
-  Rileva e gestisce automaticamente file P7M in formato Base64, DER e PEM.
-- **Visualizzazione dettagli firmatari completi**  
-  Mostra per ogni firmatario:
-  - Nome completo
-  - Codice Fiscale
-  - Organizzazione
-  - Periodo di validità del certificato
-  - Stato certificato (valido/scaduto)
-  - Data e ora della firma
-  - Verifica se la firma era valida al momento della sottoscrizione
-- **Supporto firme multiple e annidate**  
-  Gestisce file con doppia firma (`.p7m`) e buste annidate.
-- **Estrazione del file originale**  
-  Permette di aprire il file estratto dal pacchetto firmato.
-- **Interfaccia moderna**  
-  Basata su GTK4, con headerbar e layout responsive.
+- **Open and verify .p7m files**  
+	Select a digitally signed file and verify the signature validity using OpenSSL.
+- **Multiple format support**  
+	Automatically detects and handles P7M files in Base64, DER, and PEM formats.
+- **Complete signer details view**  
+	Shows for each signer:
+	- Full name
+	- Tax code
+	- Organization
+	- Certificate validity period
+	- Certificate status (valid/expired)
+	- Signature date and time
+	- Checks if the signature was valid at signing time
+- **Support for multiple and nested signatures**  
+	Handles files with double signature (`.p7m`) and nested envelopes.
+- **Extract original file**  
+	Allows opening the extracted file from the signed package.
+- **Modern interface**  
+	Based on GTK4, with headerbar and responsive layout.
 
-## Come si usa
+## Usage
 
-1. **Avvia l'applicazione.**
-2. **Clicca su "📁 Seleziona file"** e seleziona un file `.p7m`.
-3. **Visualizza i dettagli delle firme** nella finestra principale.
-4. **Apri il file estratto** cliccando su "📄 Visualizza contenuto" (se la verifica ha successo).
+1. **Start the application.**
+2. **Click "📁 Select file"** and choose a `.p7m` file.
+3. **View signature details** in the main window.
+4. **Open the extracted file** by clicking "📄 View content" (if verification succeeds).
 
-## Requisiti
+## Requirements
 
 - Python 3.8+
-- GTK 4 e PyGObject
-- OpenSSL installato nel sistema
-- Libreria Python `asn1crypto` (per analisi certificati digitali)
+- GTK 4 and PyGObject
+- OpenSSL installed on the system
+- Python library `asn1crypto` (for digital certificate analysis)
 
-## Installazione
+## Installation
 
-### Installazione tramite Flatpak
+### Flatpak Installation
 
-Per installare l'applicazione in ambiente isolato tramite Flatpak:
+To install the application in a sandboxed environment using Flatpak:
 
 ```bash
 flatpak-builder --user --install --force-clean build-dir io.github.catoblepa.p7mviewer.yaml
 ```
 
-### Installazione manuale
+### Manual Installation
 
-Se preferisci eseguire l'applicazione direttamente:
+If you prefer to run the application directly:
 
 ```bash
-# Installa dipendenze
+# Install dependencies
 pip install asn1crypto
 
-# Esegui l'applicazione
+# Run the application
 cd src
 python3 p7mviewer.py [file.p7m]
 ```
 
+## Drag & Drop and Flatpak Permissions
 
-## Drag & Drop e permessi Flatpak
+**Note:** If you use the application via Flatpak, dragging and dropping files from your home directory or other user folders may not work unless the app has the necessary permissions to access user files.
 
-**Nota:** Se usi l'applicazione tramite Flatpak, il drag and drop di file dalla tua home directory o da altre cartelle utente potrebbe non funzionare a meno che l'app non abbia i permessi necessari per accedere ai file dell'utente.
+To enable drag and drop from your home, you can:
 
-Per abilitare il drag and drop di file dalla home, puoi:
+- Start the app with additional permission:
 
-- Avviare l'app con il permesso aggiuntivo:
+	```bash
+	flatpak override --user --filesystem=home io.github.catoblepa.p7mviewer
+	```
 
-  ```bash
-  flatpak override --user --filesystem=home io.github.catoblepa.p7mviewer
-  ```
+- Or, for a single folder (e.g. Documents):
 
-- Oppure, per una singola cartella (es. Documenti):
+	```bash
+	flatpak override --user --filesystem=xdg-documents io.github.catoblepa.p7mviewer
+	```
 
-  ```bash
-  flatpak override --user --filesystem=xdg-documents io.github.catoblepa.p7mviewer
-  ```
-
-In alternativa, puoi sempre usare il selettore file integrato, che funziona anche senza permessi aggiuntivi grazie ai portali Flatpak.
+Alternatively, you can always use the integrated file selector, which works even without extra permissions thanks to Flatpak portals.
 
 ## Debug
 
-Per abilitare la modalità debug ed ottenere output dettagliati nel terminale, imposta la variabile d'ambiente `P7MVIEWER_DEBUG`:
+To enable debug mode and get detailed output in the terminal, set the environment variable `P7MVIEWER_DEBUG`:
 
 ```bash
-# Modalità debug abilitata
+# Enable debug mode
 export P7MVIEWER_DEBUG=true
 python3 src/p7mviewer.py
 ```
 
-## Localizzazione
+## Localization
 
-L'applicazione supporta l'internazionalizzazione (i18n) tramite gettext. Attualmente sono disponibili le traduzioni per:
-- **Inglese** (lingua predefinita)
-- **Italiano**
+The application supports internationalization (i18n) via gettext. Currently available translations:
+- **English** (default language)
+- **Italian**
 
-### Aggiungere una nuova traduzione
+### Add a new translation
 
-Per aggiungere il supporto per una nuova lingua:
+To add support for a new language:
 
-1. **Aggiorna il template POT** con le stringhe più recenti:
-   ```bash
-   cd src
-   xgettext --language=Python --keyword=_ --output=p7mviewer.pot p7mviewer.py
-   ```
+1. **Update the POT template** with the latest strings:
+	 ```bash
+	 cd src
+	 xgettext --language=Python --keyword=_ --output=p7mviewer.pot p7mviewer.py
+	 ```
 
-2. **Crea una nuova traduzione** (esempio per il francese):
-   ```bash
-   mkdir -p locale/fr/LC_MESSAGES
-   msginit --input=p7mviewer.pot --locale=fr --output=locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
-   ```
+2. **Create a new translation** (example for French):
+	 ```bash
+	 mkdir -p locale/fr/LC_MESSAGES
+	 msginit --input=p7mviewer.pot --locale=fr --output=locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
+	 ```
 
-3. **Traduci le stringhe** nel file `.po` appena creato:
-   ```bash
-   # Modifica il file con un editor di testo o usa strumenti come Poedit
-   nano locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
-   ```
+3. **Translate the strings** in the newly created `.po` file:
+	 ```bash
+	 # Edit the file with a text editor or use tools like Poedit
+	 nano locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
+	 ```
 
-4. **Compila la traduzione** in formato binario:
-   ```bash
-   msgfmt locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po \
-          -o locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
-   ```
+4. **Compile the translation** to binary format:
+	 ```bash
+	 msgfmt locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po \
+					-o locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
+	 ```
 
-5. **Aggiorna il manifest Flatpak** per includere la nuova traduzione in `com.github.catoblepa.p7mviewer.yaml`:
-   ```yaml
-   build-commands:
-     # ... altri comandi ...
-     - install -Dm644 locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo /app/share/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
-   sources:
-     # ... altri sources ...
-     - type: file
-       path: src/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
-   ```
+5. **Update the Flatpak manifest** to include the new translation in `com.github.catoblepa.p7mviewer.yaml`:
+	 ```yaml
+	 build-commands:
+		 # ... other commands ...
+		 - install -Dm644 locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo /app/share/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
+	 sources:
+		 # ... other sources ...
+		 - type: file
+			 path: src/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
+	 ```
 
-6. **Testa la traduzione** impostando la variabile d'ambiente:
-   ```bash
-   LANGUAGE=fr python3 p7mviewer.py
-   ```
+6. **Test the translation** by setting the environment variable:
+	 ```bash
+	 LANGUAGE=fr python3 p7mviewer.py
+	 ```
 
-## Localizzazione
-
-L'applicazione supporta l'internazionalizzazione (i18n) tramite gettext. Attualmente sono disponibili le traduzioni per:
-- **Inglese** (lingua predefinita)
-- **Italiano**
-
-### Aggiungere una nuova traduzione
-
-Per aggiungere il supporto per una nuova lingua:
-
-1. **Aggiorna il template POT** con le stringhe più recenti:
-   ```bash
-   cd src
-   xgettext --language=Python --keyword=_ --output=p7mviewer.pot p7mviewer.py
-   ```
-
-2. **Crea una nuova traduzione** (esempio per il francese):
-   ```bash
-   mkdir -p locale/fr/LC_MESSAGES
-   msginit --input=p7mviewer.pot --locale=fr --output=locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
-   ```
-
-3. **Traduci le stringhe** nel file `.po` appena creato:
-   ```bash
-   # Modifica il file con un editor di testo o usa strumenti come Poedit
-   nano locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
-   ```
-
-4. **Compila la traduzione** in formato binario:
-   ```bash
-   msgfmt locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po \
-          -o locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
-   ```
-
-5. **Aggiorna il manifest Flatpak** per includere la nuova traduzione in `com.github.catoblepa.p7mviewer.yaml`:
-   ```yaml
-   build-commands:
-     # ... altri comandi ...
-     - install -Dm644 locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo /app/share/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
-   sources:
-     # ... altri sources ...
-     - type: file
-       path: src/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
-   ```
-
-6. **Testa la traduzione** impostando la variabile d'ambiente:
-   ```bash
-   LANGUAGE=fr python3 p7mviewer.py
-   ```
-
-## Licenza
+## License
 
 [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)
