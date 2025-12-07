@@ -305,16 +305,6 @@ class FirmeWindow(Gtk.ApplicationWindow):
         while base_name.lower().endswith('.p7m'):
             base_name = base_name[:-4]
         base_name = base_name.strip()
-        file_output = os.path.join(cache_dir, base_name)
-        debug_print(f"[DEBUG] File estratto sarà: {file_output}")
-
-        cmd = [
-            "openssl", "smime", "-verify",
-            "-in", file_p7m,
-            "-inform", "DER",
-            "-noverify",
-            "-out", file_output
-        ]
 
         # Formatta info file
         nome_file = os.path.basename(file_p7m)
@@ -323,32 +313,68 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.label_info_file.set_markup(file_markup)
 
         try:
-            debug_print(f"[DEBUG] Eseguo comando: {' '.join(cmd)}")
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            debug_print(f"[DEBUG] Return code: {result.returncode}")
-            debug_print(f"[DEBUG] stdout: {result.stdout}")
-            debug_print(f"[DEBUG] stderr: {result.stderr}")
-            if result.returncode == 0:
-                self.file_estratto = file_output
-                debug_print(f"[DEBUG] File estratto impostato a: {self.file_estratto}")
-                self.btn_apri_estratto.set_sensitive(True)
-                self.file_verificato = True
-                self.aggiorna_ui()
-                # Mostra badge successo
-                self.label_info_file.set_markup(file_markup)
-                self.status_badge.set_markup(f'<span size="small" bgcolor="#e8f5e9" color="#2e7d32"> ✓ {_("Verification completed successfully")} </span>')
-                self.status_badge.set_visible(True)
-                self.mostra_info_firma(file_p7m)
-            else:
-                # Errore nella verifica - mostra interfaccia con messaggio
+            # Prima analizza quanti livelli di firma ci sono
+            with open(file_p7m, 'rb') as f:
+                data = f.read()
+            firme_info = analizza_busta(data)
+            
+            if not firme_info:
+                # Nessuna firma trovata
                 self.file_verificato = True
                 self.aggiorna_ui()
                 self.label_info_file.set_markup(file_markup)
-                self.status_badge.set_markup(f'<span size="small" bgcolor="#ffebee" color="#c62828"> ❌ {_("Verification error")} </span>')
+                self.status_badge.set_markup(f'<span size="small" bgcolor="#ffebee" color="#c62828"> ❌ {_("No digital signature found in file")} </span>')
                 self.status_badge.set_visible(True)
-                # Mostra messaggio di errore nella listbox
-                self.mostra_errore_verifica(result.stderr)
-                debug_print(f"[DEBUG] Errore openssl: {result.stderr}")
+                return
+            
+            # Determina il numero massimo di livelli di firma
+            max_livello = max(info.get('livello_busta', 1) for info in firme_info)
+            debug_print(f"[DEBUG] Trovati {len(firme_info)} firmatari su {max_livello} livelli di firma")
+            
+            # Estrai ricorsivamente per ogni livello di firma
+            file_corrente = file_p7m
+            for livello in range(1, max_livello + 1):
+                file_output = os.path.join(cache_dir, f"{base_name}_level{livello}")
+                debug_print(f"[DEBUG] Estrazione livello {livello}: {file_corrente} -> {file_output}")
+                
+                cmd = [
+                    "openssl", "smime", "-verify",
+                    "-in", file_corrente,
+                    "-inform", "DER",
+                    "-noverify",
+                    "-out", file_output
+                ]
+                
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                debug_print(f"[DEBUG] Livello {livello} - Return code: {result.returncode}")
+                
+                if result.returncode != 0:
+                    # Errore nell'estrazione
+                    self.file_verificato = True
+                    self.aggiorna_ui()
+                    self.label_info_file.set_markup(file_markup)
+                    self.status_badge.set_markup(f'<span size="small" bgcolor="#ffebee" color="#c62828"> ❌ {_("Verification error")} </span>')
+                    self.status_badge.set_visible(True)
+                    self.mostra_errore_verifica(result.stderr)
+                    debug_print(f"[DEBUG] Errore openssl al livello {livello}: {result.stderr}")
+                    return
+                
+                # Prepara per il prossimo livello
+                file_corrente = file_output
+            
+            # L'ultimo file estratto è quello finale
+            self.file_estratto = file_corrente
+            debug_print(f"[DEBUG] File estratto finale impostato a: {self.file_estratto}")
+            self.btn_apri_estratto.set_sensitive(True)
+            self.file_verificato = True
+            self.aggiorna_ui()
+            
+            # Mostra badge successo
+            self.label_info_file.set_markup(file_markup)
+            self.status_badge.set_markup(f'<span size="small" bgcolor="#e8f5e9" color="#2e7d32"> ✓ {_("Verification completed successfully")} </span>')
+            self.status_badge.set_visible(True)
+            self.mostra_info_firma(file_p7m)
+            
         except Exception as e:
             # Eccezione - mostra interfaccia con messaggio
             self.file_verificato = True
@@ -362,8 +388,9 @@ class FirmeWindow(Gtk.ApplicationWindow):
 
     def crea_expander_firma(self, info, idx):
         """Crea un expander per una singola firma con dettagli espandibili"""
-        identita = info.get('Identity', _('Unknown'))
-        stato = info.get('Certificate status', '')
+        # Usa le chiavi tradotte come fa signature_parser.py
+        identita = info.get(_('Identity'), _('Unknown'))
+        stato = info.get(_('Certificate status'), '')
         
         expander = Gtk.Expander()
         expander.set_margin_top(4)
@@ -391,20 +418,20 @@ class FirmeWindow(Gtk.ApplicationWindow):
         details_box.set_margin_top(8)
         details_box.set_margin_start(12)
         
-        # Campi da mostrare quando espanso con traduzioni
+        # Campi da mostrare quando espanso - usa le chiavi tradotte
         campi_dettagli = [
-            ('Tax Code', _('Tax Code'), '🆔'),
-            ('Organization', _('Organization'), '🏢'),
-            ('Signature date and time', _('Signature date and time'), '📅'),
-            ('Signature valid at signing time', _('Signature valid at signing time'), '✔️'),
-            ('Valid from', _('Valid from'), '📆'),
-            ('Valid until', _('Valid until'), '📆'),
-            ('Certificate issued by', _('Certificate issued by'), '🏛️'),
+            (_('Tax Code'), '🆔'),
+            (_('Organization'), '🏢'),
+            (_('Signature date and time'), '📅'),
+            (_('Signature valid at signing time'), '✔️'),
+            (_('Valid from'), '📆'),
+            (_('Valid until'), '📆'),
+            (_('Certificate issued by'), '🏛️'),
         ]
         
-        for campo_key, campo_tradotto, icona in campi_dettagli:
-            if campo_key in info:
-                valore = info[campo_key]
+        for campo_tradotto, icona in campi_dettagli:
+            if campo_tradotto in info:
+                valore = info[campo_tradotto]
                 detail_label = Gtk.Label()
                 detail_label.set_markup(f'<span size="small">{icona} <b>{campo_tradotto}:</b> {valore}</span>')
                 detail_label.set_halign(Gtk.Align.START)

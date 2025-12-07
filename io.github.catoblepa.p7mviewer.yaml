@@ -3,6 +3,7 @@ runtime: org.gnome.Platform
 runtime-version: '49'
 sdk: org.gnome.Sdk
 command: p7mviewer.py
+separate-locales: false
 finish-args:
   - --socket=wayland
   - --socket=fallback-x11
@@ -27,12 +28,16 @@ modules:
       - install -Dm644 io.github.catoblepa.p7mviewer.svg /app/share/icons/hicolor/scalable/apps/io.github.catoblepa.p7mviewer.svg
       - install -Dm644 io.github.catoblepa.p7mviewer.desktop /app/share/applications/io.github.catoblepa.p7mviewer.desktop
       - install -Dm644 io.github.catoblepa.p7mviewer.metainfo.xml /app/share/metainfo/io.github.catoblepa.p7mviewer.metainfo.xml
-      # Compile and install locale files
-      - bash ./build-locales.sh
-      - install -Dm644 de/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo /app/share/locale/de/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
-      - install -Dm644 es/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo /app/share/locale/es/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
-      - install -Dm644 fr/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo /app/share/locale/fr/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
-      - install -Dm644 it/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo /app/share/locale/it/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
+      # Compile locale files from PO to MO
+      - msgfmt -o de.mo de/LC_MESSAGES/io.github.catoblepa.p7mviewer.po
+      - msgfmt -o es.mo es/LC_MESSAGES/io.github.catoblepa.p7mviewer.po
+      - msgfmt -o fr.mo fr/LC_MESSAGES/io.github.catoblepa.p7mviewer.po
+      - msgfmt -o it.mo it/LC_MESSAGES/io.github.catoblepa.p7mviewer.po
+      # Install locale files
+      - install -Dm644 de.mo /app/share/locale/de/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
+      - install -Dm644 es.mo /app/share/locale/es/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
+      - install -Dm644 fr.mo /app/share/locale/fr/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
+      - install -Dm644 it.mo /app/share/locale/it/LC_MESSAGES/io.github.catoblepa.p7mviewer.mo
     sources:
       - type: file
         path: src/p7mviewer.py
