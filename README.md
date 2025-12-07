@@ -63,21 +63,19 @@ python3 p7mviewer.py [file.p7m]
 
 ## Drag & Drop and Flatpak Permissions
 
-**Note:** If you use the application via Flatpak, dragging and dropping files from your home directory or other user folders may not work unless the app has the necessary permissions to access user files.
+**Note:** If you use the application via Flatpak, dragging and dropping files from your home directory or other user folders may not work unless the app has the necessary permissions.
 
-To enable drag and drop from your home, you can:
+To enable drag and drop from your home:
 
-- Start the app with additional permission:
+```bash
+flatpak override --user --filesystem=home io.github.catoblepa.p7mviewer
+```
 
-	```bash
-	flatpak override --user --filesystem=home io.github.catoblepa.p7mviewer
-	```
+Or, for a single folder (e.g. Documents):
 
-- Or, for a single folder (e.g. Documents):
-
-	```bash
-	flatpak override --user --filesystem=xdg-documents io.github.catoblepa.p7mviewer
-	```
+```bash
+flatpak override --user --filesystem=xdg-documents io.github.catoblepa.p7mviewer
+```
 
 Alternatively, you can always use the integrated file selector, which works even without extra permissions thanks to Flatpak portals.
 
@@ -93,53 +91,27 @@ python3 src/p7mviewer.py
 
 ## Localization
 
-The application supports internationalization (i18n) via gettext. Currently available translations:
-- **English** (default language)
-- **Italian**
+The application supports automatic translation via gettext. Translations are generated automatically during the Flatpak build using the `build-locales.sh` script.
 
-### Add a new translation
+To add a new language:
 
-To add support for a new language:
-
-1. **Update the POT template** with the latest strings:
-	 ```bash
-	 cd src
-	 xgettext --language=Python --keyword=_ --output=p7mviewer.pot p7mviewer.py signature_parser.py
-	 ```
-
-2. **Create a new translation** (example for French):
-	 ```bash
-	 mkdir -p locale/fr/LC_MESSAGES
-	 msginit --input=p7mviewer.pot --locale=fr --output=locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
-	 ```
-
-3. **Translate the strings** in the newly created `.po` file:
-	 ```bash
-	 # Edit the file with a text editor or use tools like Poedit
-	 nano locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
-	 ```
-
-4. **Compile the translation** to binary format:
-	 ```bash
-	 msgfmt locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po \
-					-o locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
-	 ```
-
-5. **Update the Flatpak manifest** to include the new translation in `com.github.catoblepa.p7mviewer.yaml`:
-	 ```yaml
-	 build-commands:
-		 # ... other commands ...
-		 - install -Dm644 locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo /app/share/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
-	 sources:
-		 # ... other sources ...
-		 - type: file
-			 path: src/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
-	 ```
-
-6. **Test the translation** by setting the environment variable:
-	 ```bash
-	 LANGUAGE=fr python3 p7mviewer.py
-	 ```
+1. Update the POT template:
+   ```bash
+   cd src
+   xgettext --language=Python --keyword=_ --output=p7mviewer.pot p7mviewer.py signature_parser.py
+   ```
+2. Create a new translation (example for French):
+   ```bash
+   mkdir -p locale/fr/LC_MESSAGES
+   msginit --input=p7mviewer.pot --locale=fr --output=locale/fr/LC_MESSAGES/io.github.catoblepa.p7mviewer.po
+   ```
+3. Translate the strings in the newly created `.po` file.
+4. The `.mo` files are compiled automatically during the Flatpak build.
+5. Update the YAML manifest only if you add a new language.
+6. Test the translation:
+   ```bash
+   LANGUAGE=fr python3 p7mviewer.py
+   ```
 
 ## License
 

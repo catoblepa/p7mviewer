@@ -63,23 +63,21 @@ python3 p7mviewer.py [file.p7m]
 
 ## Drag & Drop e permessi Flatpak
 
-**Nota:** Se usi l'applicazione tramite Flatpak, il drag and drop di file dalla tua home directory o da altre cartelle utente potrebbe non funzionare a meno che l'app non abbia i permessi necessari per accedere ai file dell'utente.
+**Nota:** Se usi l'applicazione tramite Flatpak, il trascinamento di file dalla home o da altre cartelle utente potrebbe non funzionare senza i permessi necessari.
 
-Per abilitare il drag and drop di file dalla home, puoi:
+Per abilitare il drag & drop dalla home:
 
-- Avviare l'app con il permesso aggiuntivo:
+```bash
+flatpak override --user --filesystem=home io.github.catoblepa.p7mviewer
+```
 
-  ```bash
-  flatpak override --user --filesystem=home io.github.catoblepa.p7mviewer
-  ```
+Oppure, per una singola cartella (es. Documenti):
 
-- Oppure, per una singola cartella (es. Documenti):
+```bash
+flatpak override --user --filesystem=xdg-documents io.github.catoblepa.p7mviewer
+```
 
-  ```bash
-  flatpak override --user --filesystem=xdg-documents io.github.catoblepa.p7mviewer
-  ```
-
-In alternativa, puoi sempre usare il selettore file integrato, che funziona anche senza permessi aggiuntivi grazie ai portali Flatpak.
+In alternativa, puoi sempre usare il selettore file integrato, che funziona anche senza permessi extra grazie ai Flatpak portals.
 
 ## Debug
 
@@ -93,50 +91,24 @@ python3 src/p7mviewer.py
 
 ## Localizzazione
 
-L'applicazione supporta l'internazionalizzazione (i18n) tramite gettext. Attualmente sono disponibili le traduzioni per:
-- **Inglese** (lingua predefinita)
-- **Italiano**
+L'applicazione supporta la traduzione automatica tramite gettext. Le traduzioni vengono generate automaticamente durante la build Flatpak tramite lo script `build-locales.sh`.
 
-### Aggiungere una nuova traduzione
+Per aggiungere una nuova lingua:
 
-Per aggiungere il supporto per una nuova lingua:
-
-1. **Aggiorna il template POT** con le stringhe più recenti:
+1. Aggiorna il template POT:
    ```bash
    cd src
    xgettext --language=Python --keyword=_ --output=p7mviewer.pot p7mviewer.py signature_parser.py
    ```
-
-2. **Crea una nuova traduzione** (esempio per il francese):
+2. Crea una nuova traduzione (esempio per francese):
    ```bash
    mkdir -p locale/fr/LC_MESSAGES
-   msginit --input=p7mviewer.pot --locale=fr --output=locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
+   msginit --input=p7mviewer.pot --locale=fr --output=locale/fr/LC_MESSAGES/io.github.catoblepa.p7mviewer.po
    ```
-
-3. **Traduci le stringhe** nel file `.po` appena creato:
-   ```bash
-   # Modifica il file con un editor di testo o usa strumenti come Poedit
-   nano locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po
-   ```
-
-4. **Compila la traduzione** in formato binario:
-   ```bash
-   msgfmt locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.po \
-          -o locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
-   ```
-
-5. **Aggiorna il manifest Flatpak** per includere la nuova traduzione in `com.github.catoblepa.p7mviewer.yaml`:
-   ```yaml
-   build-commands:
-     # ... altri comandi ...
-     - install -Dm644 locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo /app/share/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
-   sources:
-     # ... altri sources ...
-     - type: file
-       path: src/locale/fr/LC_MESSAGES/com.github.catoblepa.p7mviewer.mo
-   ```
-
-6. **Testa la traduzione** impostando la variabile d'ambiente:
+3. Traduci le stringhe nel file `.po` appena creato.
+4. La compilazione dei file `.mo` avviene automaticamente durante la build Flatpak.
+5. Aggiorna il manifest YAML solo se aggiungi una nuova lingua.
+6. Testa la traduzione:
    ```bash
    LANGUAGE=fr python3 p7mviewer.py
    ```
