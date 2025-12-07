@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-07 11:48+0100\n"
+"POT-Creation-Date: 2025-12-07 16:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -65,7 +65,7 @@ msgstr ""
 msgid "File not accessible"
 msgstr ""
 
-#: p7mviewer.py:211 p7mviewer.py:222 p7mviewer.py:357 signature_parser.py:132
+#: p7mviewer.py:211 p7mviewer.py:222 p7mviewer.py:383 signature_parser.py:132
 msgid "Error"
 msgstr ""
 
@@ -81,108 +81,109 @@ msgstr ""
 msgid "File selection error"
 msgstr ""
 
-#: p7mviewer.py:339
-msgid "Verification completed successfully"
-msgstr ""
-
-#: p7mviewer.py:347
-msgid "Verification error"
-msgstr ""
-
-#: p7mviewer.py:365
-msgid "Unknown"
-msgstr ""
-
-#: p7mviewer.py:396 signature_parser.py:117
-msgid "Tax Code"
-msgstr ""
-
-#: p7mviewer.py:397 signature_parser.py:118
-msgid "Organization"
-msgstr ""
-
-#: p7mviewer.py:398 signature_parser.py:139
-msgid "Signature date and time"
-msgstr ""
-
-#: p7mviewer.py:399 signature_parser.py:144 signature_parser.py:146
-msgid "Signature valid at signing time"
-msgstr ""
-
-#: p7mviewer.py:400 signature_parser.py:119
-msgid "Valid from"
-msgstr ""
-
-#: p7mviewer.py:401 signature_parser.py:120
-msgid "Valid until"
-msgstr ""
-
-#: p7mviewer.py:402 signature_parser.py:121
-msgid "Certificate issued by"
-msgstr ""
-
-#: p7mviewer.py:429
+#: p7mviewer.py:326 p7mviewer.py:456
 msgid "No digital signature found in file"
 msgstr ""
 
-#: p7mviewer.py:443
+#: p7mviewer.py:356
+msgid "Verification error"
+msgstr ""
+
+#: p7mviewer.py:374
+msgid "Verification completed successfully"
+msgstr ""
+
+#: p7mviewer.py:392 signature_parser.py:116
+msgid "Identity"
+msgstr ""
+
+#: p7mviewer.py:392
+msgid "Unknown"
+msgstr ""
+
+#: p7mviewer.py:393 signature_parser.py:126 signature_parser.py:128
+#: signature_parser.py:130
+msgid "Certificate status"
+msgstr ""
+
+#: p7mviewer.py:423 signature_parser.py:117
+msgid "Tax Code"
+msgstr ""
+
+#: p7mviewer.py:424 signature_parser.py:118
+msgid "Organization"
+msgstr ""
+
+#: p7mviewer.py:425 signature_parser.py:139
+msgid "Signature date and time"
+msgstr ""
+
+#: p7mviewer.py:426 signature_parser.py:144 signature_parser.py:146
+msgid "Signature valid at signing time"
+msgstr ""
+
+#: p7mviewer.py:427 signature_parser.py:119
+msgid "Valid from"
+msgstr ""
+
+#: p7mviewer.py:428 signature_parser.py:120
+msgid "Valid until"
+msgstr ""
+
+#: p7mviewer.py:429 signature_parser.py:121
+msgid "Certificate issued by"
+msgstr ""
+
+#: p7mviewer.py:470
 msgid "signature"
 msgstr ""
 
-#: p7mviewer.py:443
+#: p7mviewer.py:470
 msgid "signatures"
 msgstr ""
 
-#: p7mviewer.py:444
+#: p7mviewer.py:471
 msgid "Total"
 msgstr ""
 
-#: p7mviewer.py:444
+#: p7mviewer.py:471
 msgid "verified"
 msgstr ""
 
-#: p7mviewer.py:453
+#: p7mviewer.py:480
 msgid "Error during signature analysis"
 msgstr ""
 
-#: p7mviewer.py:471
+#: p7mviewer.py:498
 msgid "Unable to verify file"
 msgstr ""
 
-#: p7mviewer.py:477
+#: p7mviewer.py:504
 msgid "The selected file is not a valid P7M file or cannot be processed."
 msgstr ""
 
-#: p7mviewer.py:486
+#: p7mviewer.py:513
 msgid "File is not in valid P7M/CAdES format"
 msgstr ""
 
-#: p7mviewer.py:488
+#: p7mviewer.py:515
 msgid "Technical details"
 msgstr ""
 
-#: p7mviewer.py:523
+#: p7mviewer.py:550
 msgid "File opening error"
 msgstr ""
 
-#: p7mviewer.py:527
+#: p7mviewer.py:554
 msgid "Extracted file no longer exists"
 msgstr ""
 
-#: p7mviewer.py:530
+#: p7mviewer.py:557
 msgid "No extracted file available"
 msgstr ""
 
 #: signature_parser.py:98
 msgid "Not present"
-msgstr ""
-
-#: signature_parser.py:116
-msgid "Identity"
-msgstr ""
-
-#: signature_parser.py:126 signature_parser.py:128 signature_parser.py:130
-msgid "Certificate status"
 msgstr ""
 
 #: signature_parser.py:126
