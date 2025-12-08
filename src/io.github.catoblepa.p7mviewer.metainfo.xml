@@ -21,6 +21,8 @@
     <ul>
       <li>Automatic format detection (Base64, DER, PEM)</li>
       <li xml:lang="it">Rilevamento automatico del formato (Base64, DER, PEM)</li>
+      <li>Drag &amp; drop support</li>
+      <li xml:lang="it">Supporto drag &amp; drop</li>
       <li>Support for multiple and nested signatures</li>
       <li xml:lang="it">Supporto per firme multiple e annidate</li>
       <li>Display signer details: name, tax code (Codice Fiscale), organization</li>
@@ -65,11 +67,13 @@
   </screenshots>
   
   <releases>
-    <release version="1.1.0" date="2025-12-07">
+    <release version="1.1.1" date="2025-12-08">
       <description>
-        <p>Initial release</p>
-        <p xml:lang="it">P7M v1.1.0</p>
+        <p>Release 1.1.1</p>
+        <p xml:lang="it">Versione 1.1.1</p>
         <ul>
+          <li>Added drag &amp; drop support</li>
+          <li xml:lang="it">Aggiunto supporto drag &amp; drop</li>
           <li>P7M/CAdES signature verification</li>
           <li xml:lang="it">Verifica firme P7M/CAdES</li>
           <li>Multiple signature support</li>

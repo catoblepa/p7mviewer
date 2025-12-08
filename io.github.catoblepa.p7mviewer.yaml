@@ -9,8 +9,6 @@ finish-args:
   - --socket=fallback-x11
   - --device=dri
   - --share=ipc
-  - --filesystem=xdg-run/gvfsd
-  - --talk-name=org.gtk.vfs.*
 modules:
   - name: asn1crypto
     buildsystem: simple

@@ -9,10 +9,6 @@ build-dir/
 .flatpak-builder/
 *.flatpak
 
-# OS/Editor files
-.DS_Store
-Thumbs.db
-
 # Backup files
 *~
 *.swp
