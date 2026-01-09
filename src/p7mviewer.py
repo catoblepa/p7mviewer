@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 import gettext
 import locale
+import shutil
 
 from signature_parser import analizza_busta
 
@@ -64,6 +65,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.set_icon_name("io.github.catoblepa.p7mviewer")
         self.file_estratto = None
         self.file_verificato = False
+        self.cache_dir = os.path.join(GLib.get_user_cache_dir(), 'p7mviewer')
 
         # Headerbar
         self._setup_headerbar()
@@ -90,6 +92,9 @@ class FirmeWindow(Gtk.ApplicationWindow):
         if file_p7m:
             debug_print(f"[DEBUG] File passed at startup: {file_p7m}")
             self.verifica_firma(file_p7m)
+
+        # Connect destroy signal to clean up cache
+        self.connect("destroy", self.on_destroy)
 
     def _setup_headerbar(self):
         """Setup headerbar with buttons"""
@@ -292,8 +297,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.file_verificato = False
         
         # Cache directory
-        cache_dir = os.path.join(GLib.get_user_cache_dir(), 'p7mviewer')
-        os.makedirs(cache_dir, exist_ok=True)
+        os.makedirs(self.cache_dir, exist_ok=True)
 
         # File info
         base_path = Path(file_p7m)
@@ -315,10 +319,16 @@ class FirmeWindow(Gtk.ApplicationWindow):
             max_livello = max(info.get('livello_busta', 1) for info in firme_info)
             file_corrente = file_p7m
             
+            base_name = base_path.name.rstrip('.p7m').rstrip('.P7M')
+            final_output_path = os.path.join(self.cache_dir, base_name)
+
             for livello in range(1, max_livello + 1):
-                base_name = base_path.name.rstrip('.p7m').rstrip('.P7M')
-                file_output = os.path.join(cache_dir, f"{base_name}_level{livello}")
-                
+                # Use a temporary name for intermediate files
+                if livello < max_livello:
+                    file_output = os.path.join(self.cache_dir, f"{base_name}_level{livello}")
+                else:
+                    file_output = final_output_path
+
                 cmd = [
                     "openssl", "smime", "-verify",
                     "-in", file_corrente, "-inform", "DER",
@@ -334,7 +344,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
                 file_corrente = file_output
             
             # Success
-            self.file_estratto = file_corrente
+            self.file_estratto = final_output_path
             self.btn_apri_estratto.set_sensitive(True)
             self.mostra_stato_file("success", _("Verification completed successfully"))
             self.mostra_info_firma(file_p7m)
@@ -489,6 +499,20 @@ class FirmeWindow(Gtk.ApplicationWindow):
             launcher.launch(self, None, on_launch_finish)
         except Exception as e:
             self.mostra_stato_file("error", str(e)[:100])
+
+    def on_destroy(self, widget):
+        """Clear cache on exit"""
+        self._clear_cache()
+
+    def _clear_cache(self):
+        """Remove all files in the cache directory"""
+        debug_print(f"[DEBUG] Clearing cache directory: {self.cache_dir}")
+        if os.path.exists(self.cache_dir):
+            try:
+                shutil.rmtree(self.cache_dir)
+            except Exception as e:
+                debug_print(f"[DEBUG] Error clearing cache: {e}")
+        os.makedirs(self.cache_dir, exist_ok=True)
 
 def main():
     debug_print("[DEBUG] main() called")
