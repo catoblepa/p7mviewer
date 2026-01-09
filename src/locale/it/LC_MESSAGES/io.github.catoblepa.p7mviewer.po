@@ -26,12 +26,16 @@ msgid "Select a P7M file to verify"
 msgstr "Seleziona un file P7M da verificare"
 
 #: p7mviewer.py:108
-msgid "📄 View content"
-msgstr "📄 Visualizza contenuto"
+msgid "📄 Open"
+msgstr "📄 Apri"
 
 #: p7mviewer.py:111
 msgid "Open the original document extracted from the signed file"
 msgstr "Apri il documento originale estratto dal file firmato"
+
+#: p7mviewer.py:117
+msgid "Save the extracted document"
+msgstr "Salva il documento estratto"
 
 #: p7mviewer.py:146
 msgid "DIGITAL SIGNATURES:"
@@ -162,6 +166,22 @@ msgstr "Il file estratto non esiste più"
 #: p7mviewer.py:487
 msgid "File opening error"
 msgstr "Errore apertura file"
+
+#: p7mviewer.py:495
+msgid "Save extracted file"
+msgstr "Salva file estratto"
+
+#: p7mviewer.py:525
+msgid "File saved successfully"
+msgstr "File salvato con successo"
+
+#: p7mviewer.py:528 p7mviewer.py:531
+msgid "Error saving file"
+msgstr "Errore nel salvataggio del file"
+
+#: p7mviewer.py:538
+msgid "Error opening save dialog"
+msgstr "Errore nell'apertura della finestra di salvataggio"
 
 #: signature_parser.py:98
 msgid "Not present"

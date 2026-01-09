@@ -65,6 +65,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.set_icon_name("io.github.catoblepa.p7mviewer")
         self.file_estratto = None
         self.file_verificato = False
+        self.file_p7m_corrente = None
         self.cache_dir = os.path.join(GLib.get_user_cache_dir(), 'p7mviewer')
 
         # Headerbar
@@ -109,8 +110,15 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.btn_apri.set_tooltip_text(_("Select a P7M file to verify"))
         headerbar.pack_start(self.btn_apri)
 
+        # Save button (icon only)
+        self.btn_salva_estratto = Gtk.Button.new_from_icon_name("document-save-symbolic")
+        self.btn_salva_estratto.set_sensitive(False)
+        self.btn_salva_estratto.connect("clicked", self.on_salva_estratto_clicked)
+        self.btn_salva_estratto.set_tooltip_text(_("Save the extracted document"))
+        headerbar.pack_end(self.btn_salva_estratto)
+
         # View extracted button
-        self.btn_apri_estratto = Gtk.Button.new_with_label(_("📄 View content"))
+        self.btn_apri_estratto = Gtk.Button.new_with_label(_("📄 Open"))
         self.btn_apri_estratto.set_sensitive(False)
         self.btn_apri_estratto.connect("clicked", self.on_apri_estratto_clicked)
         self.btn_apri_estratto.set_tooltip_text(_("Open the original document extracted from the signed file"))
@@ -280,6 +288,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.status_badge.set_visible(False)
         self.pulisci_listbox()
         self.btn_apri_estratto.set_sensitive(False)
+        self.btn_salva_estratto.set_sensitive(False)
 
     def pulisci_listbox(self):
         """Clear listbox content"""
@@ -295,6 +304,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.pulisci_sezioni()
         self.file_estratto = None
         self.file_verificato = False
+        self.file_p7m_corrente = file_p7m
         
         # Cache directory
         os.makedirs(self.cache_dir, exist_ok=True)
@@ -346,6 +356,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
             # Success
             self.file_estratto = final_output_path
             self.btn_apri_estratto.set_sensitive(True)
+            self.btn_salva_estratto.set_sensitive(True)
             self.mostra_stato_file("success", _("Verification completed successfully"))
             self.mostra_info_firma(file_p7m)
             
@@ -499,6 +510,56 @@ class FirmeWindow(Gtk.ApplicationWindow):
             launcher.launch(self, None, on_launch_finish)
         except Exception as e:
             self.mostra_stato_file("error", str(e)[:100])
+
+    def on_salva_estratto_clicked(self, widget):
+        """Save extracted file using file dialog"""
+        debug_print(f"[DEBUG] Save extracted file: {self.file_estratto}")
+        if not self.file_estratto or not os.path.exists(self.file_estratto):
+            self.mostra_stato_file("error", _("Extracted file no longer exists"))
+            return
+        
+        try:
+            # Create file dialog for saving
+            file_dialog = Gtk.FileDialog()
+            file_dialog.set_title(_("Save extracted file"))
+            
+            # Set initial file name
+            file_name = Path(self.file_estratto).name
+            file_dialog.set_initial_name(file_name)
+            
+            # Set initial folder
+            downloads_dir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD)
+            if downloads_dir and os.path.exists(downloads_dir):
+                initial_folder = Gio.File.new_for_path(downloads_dir)
+            elif self.file_p7m_corrente:
+                initial_folder = Gio.File.new_for_path(str(Path(self.file_p7m_corrente).parent))
+            else:
+                initial_folder = Gio.File.new_for_path(GLib.get_home_dir())
+            
+            file_dialog.set_initial_folder(initial_folder)
+            
+            def on_save_finish(dialog, result):
+                try:
+                    dest_file = dialog.save_finish(result)
+                    if dest_file:
+                        dest_path = dest_file.get_path()
+                        # Copy the file to the selected location
+                        shutil.copy2(self.file_estratto, dest_path)
+                        debug_print(f"[DEBUG] File saved to: {dest_path}")
+                        self.mostra_stato_file("success", _("File saved successfully"))
+                except GLib.Error as e:
+                    if e.code != 2:  # Not cancelled
+                        debug_print(f"[DEBUG] Save error: {e}")
+                        self.mostra_stato_file("error", _("Error saving file"))
+                except Exception as e:
+                    debug_print(f"[DEBUG] Save error: {e}")
+                    self.mostra_stato_file("error", _("Error saving file"))
+            
+            file_dialog.save(self, None, on_save_finish)
+            
+        except Exception as e:
+            debug_print(f"[DEBUG] Save dialog error: {e}")
+            self.mostra_stato_file("error", _("Error opening save dialog"))
 
     def on_destroy(self, widget):
         """Clear cache on exit"""
