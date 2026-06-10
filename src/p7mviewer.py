@@ -329,7 +329,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
             max_livello = max(info.get('livello_busta', 1) for info in firme_info)
             file_corrente = file_p7m
             
-            base_name = base_path.name.rstrip('.p7m').rstrip('.P7M')
+            base_name = base_path.stem if base_path.suffix.lower() == '.p7m' else base_path.name
             final_output_path = os.path.join(self.cache_dir, base_name)
 
             for livello in range(1, max_livello + 1):
