@@ -1,11 +1,15 @@
 # P7M Viewer
 
-**P7M Viewer** is a simple GTK4 application for GNOME that allows you to verify digitally signed files in `.p7m` (CAdES) format and view the details of the contained digital signatures.
+**P7M Viewer** is a simple GTK4 application for GNOME that allows you to verify digitally signed files in `.p7m` (CAdES) format and `.pdf` (PAdES) and view the details of the contained digital signatures.
 
 ## Main Features
 
-- **.p7m file verification**
+- **.p7m (CAdES) and .pdf (PAdES) file verification**
 Opens and checks digital signature validity using OpenSSL.
+- **Visual signature highlighting in PDF**
+Displays yellow highlight rectangles at signature positions in the PDF.
+- **Signature type indicator**
+Badge showing the signature type (CAdES/PAdES) in the UI.
 - **Multi-format support**
 Automatic handling of P7M files in Base64, DER, and PEM formats.
 - **Complete signer details**
@@ -23,6 +27,7 @@ Intuitive design with native drag \& drop.
 - GTK 4 and PyGObject
 - OpenSSL installed on the system
 - Python library `asn1crypto` (for digital certificate analysis)
+- Python library `pypdf` (for PDF signature handling)
 
 ## Installation
 
@@ -40,7 +45,7 @@ If you prefer to run the application directly:
 
 ```bash
 # Install dependencies
-pip install asn1crypto
+pip install asn1crypto pypdf
 
 # Run the application
 cd src
