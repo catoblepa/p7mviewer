@@ -13,7 +13,7 @@ import gettext
 import locale
 import shutil
 
-from signature_parser import analizza_busta
+from signature_parser import analizza_busta, rileva_formato_p7m, estrai_firme_da_pdf, ricostruisci_contenuto_pdf, genera_pdf_evidenziato
 
 # Setup localization
 APP_ID = "io.github.catoblepa.p7mviewer"
@@ -24,7 +24,7 @@ try:
     locale.setlocale(locale.LC_ALL, '')
     locale.bindtextdomain(APP_ID, LOCALE_DIR)
     locale.textdomain(APP_ID)
-except:
+except Exception:
     pass
 
 gettext.bindtextdomain(APP_ID, LOCALE_DIR)
@@ -67,6 +67,9 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.file_verificato = False
         self.file_p7m_corrente = None
         self.cache_dir = os.path.join(GLib.get_user_cache_dir(), 'p7mviewer')
+        self.pdf_data = None
+        self.pdf_signatures = []
+        self.all_firme = []
 
         # Headerbar
         self._setup_headerbar()
@@ -107,7 +110,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         # Open button
         self.btn_apri = Gtk.Button.new_with_label(_("📁 Select file"))
         self.btn_apri.connect("clicked", self.on_file_chooser_clicked)
-        self.btn_apri.set_tooltip_text(_("Select a P7M file to verify"))
+        self.btn_apri.set_tooltip_text(_("Select a signed file (.p7m, .pdf) to verify"))
         headerbar.pack_start(self.btn_apri)
 
         # Save button (icon only)
@@ -123,6 +126,13 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.btn_apri_estratto.connect("clicked", self.on_apri_estratto_clicked)
         self.btn_apri_estratto.set_tooltip_text(_("Open the original document extracted from the signed file"))
         headerbar.pack_end(self.btn_apri_estratto)
+
+        # Show signature areas button (PDF only)
+        self.btn_mostra_firme = Gtk.Button.new_with_label("👁️")
+        self.btn_mostra_firme.set_sensitive(False)
+        self.btn_mostra_firme.connect("clicked", self.on_mostra_firme_clicked)
+        self.btn_mostra_firme.set_tooltip_text(_("Show signature positions in the PDF (only available for PDF files)"))
+        headerbar.pack_end(self.btn_mostra_firme)
 
         self.set_titlebar(headerbar)
 
@@ -188,7 +198,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.image.set_opacity(0.5)
 
         self.label = Gtk.Label()
-        self.label.set_markup(f'<span size="large"><b>📄 {_("Select a .p7m file to verify")}</b></span>\n\n<span size="small" color="#666666">{_("Click on")}</span> <span size="small" color="#666666">"📁 {_("Select file")}"</span> <span size="small" color="#666666">{_("to start")}</span>')
+        self.label.set_markup(f'<span size="large"><b>📄 {_("Select a signed file (.p7m, .pdf) to verify")}</b></span>\n\n<span size="small" color="#666666">{_("Click on")}</span> <span size="small" color="#666666">"📁 {_("Select file")}"</span> <span size="small" color="#666666">{_("to start")}</span>')
         self.label.set_justify(Gtk.Justification.CENTER)
         self.label.set_halign(Gtk.Align.CENTER)
         self.label.set_valign(Gtk.Align.CENTER)
@@ -202,7 +212,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
 
     def mostra_stato_file(self, tipo="info", messaggio=""):
         """Gestisce tutti gli stati del file in modo coerente"""
-        self.file_verificato = tipo != "info"
+        self.file_verificato = tipo != "error"
         self.aggiorna_ui()
         
         if tipo == "success":
@@ -212,7 +222,8 @@ class FirmeWindow(Gtk.ApplicationWindow):
             self.status_badge.set_markup(f'<span size="small" bgcolor="#ffebee" color="#c62828"> ❌ {messaggio} </span>')
             self.status_badge.set_visible(True)
         else:
-            self.status_badge.set_visible(False)
+            self.status_badge.set_markup(f'<span size="small" bgcolor="#fff3e0" color="#e65100"> ℹ️ {messaggio} </span>')
+            self.status_badge.set_visible(True)
 
     def aggiorna_ui(self):
         """Update UI based on verification state"""
@@ -250,13 +261,15 @@ class FirmeWindow(Gtk.ApplicationWindow):
         """Open file chooser dialog"""
         debug_print("[DEBUG] File chooser clicked")
         file_dialog = Gtk.FileDialog()
-        file_dialog.set_title(_("Select a .p7m file to verify"))
+        file_dialog.set_title(_("Select a signed file (.p7m, .pdf) to verify"))
         
         filters = Gio.ListStore.new(Gtk.FileFilter)
         filter_p7m = Gtk.FileFilter()
-        filter_p7m.set_name(_("Digitally signed files (.p7m)"))
+        filter_p7m.set_name(_("Signed files (.p7m, .pdf)"))
         filter_p7m.add_pattern("*.p7m")
         filter_p7m.add_pattern("*.P7M")
+        filter_p7m.add_pattern("*.pdf")
+        filter_p7m.add_pattern("*.PDF")
         filters.append(filter_p7m)
         
         filter_all = Gtk.FileFilter()
@@ -289,6 +302,10 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.pulisci_listbox()
         self.btn_apri_estratto.set_sensitive(False)
         self.btn_salva_estratto.set_sensitive(False)
+        self.btn_mostra_firme.set_sensitive(False)
+        self.pdf_data = None
+        self.pdf_signatures = []
+        self.all_firme = []
 
     def pulisci_listbox(self):
         """Clear listbox content"""
@@ -319,18 +336,35 @@ class FirmeWindow(Gtk.ApplicationWindow):
         try:
             with open(file_p7m, 'rb') as f:
                 data = f.read()
+
+            # PAdES: firme embedded in PDF
+            if data.startswith(b'%PDF'):
+                self._verifica_firma_pdf(file_p7m, data)
+                return
+
             firme_info = analizza_busta(data)
             
             if not firme_info:
                 self.mostra_stato_file("error", _("No digital signature found in file"))
                 return
             
-            # Extract signatures recursively
-            max_livello = max(info.get('livello_busta', 1) for info in firme_info)
-            file_corrente = file_p7m
-            
             base_name = base_path.stem if base_path.suffix.lower() == '.p7m' else base_path.name
             final_output_path = os.path.join(self.cache_dir, base_name)
+            
+            # Detect format for OpenSSL
+            openssl_inform = "DER"
+            file_corrente = file_p7m
+            formato, data_decodificata = rileva_formato_p7m(data)
+            if formato == "pem":
+                openssl_inform = "PEM"
+            elif formato == "base64":
+                temp_der = os.path.join(self.cache_dir, f"{base_name}_decoded.der")
+                with open(temp_der, 'wb') as f:
+                    f.write(data_decodificata)
+                file_corrente = temp_der
+            
+            # Extract signatures recursively
+            max_livello = max(info.get('livello_busta', 1) for info in firme_info)
 
             for livello in range(1, max_livello + 1):
                 # Use a temporary name for intermediate files
@@ -341,16 +375,19 @@ class FirmeWindow(Gtk.ApplicationWindow):
 
                 cmd = [
                     "openssl", "smime", "-verify",
-                    "-in", file_corrente, "-inform", "DER",
+                    "-in", file_corrente, "-inform", openssl_inform,
                     "-noverify", "-out", file_output
                 ]
                 
-                result = subprocess.run(cmd, capture_output=True, text=True)
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
                 if result.returncode != 0:
                     self.mostra_stato_file("error", _("Verification error"))
                     self.mostra_errore_verifica(result.stderr)
+                    self._clear_cache()
                     return
                 
+                # Subsequent levels always use DER (openssl output)
+                openssl_inform = "DER"
                 file_corrente = file_output
             
             # Success
@@ -358,17 +395,102 @@ class FirmeWindow(Gtk.ApplicationWindow):
             self.btn_apri_estratto.set_sensitive(True)
             self.btn_salva_estratto.set_sensitive(True)
             self.mostra_stato_file("success", _("Verification completed successfully"))
-            self.mostra_info_firma(file_p7m)
+            self.mostra_info_firma(firme_info)
             
+        except subprocess.TimeoutExpired:
+            self.mostra_stato_file("error", _("Verification timed out"))
+            self.mostra_errore_verifica(_("OpenSSL verification took too long"))
+            self._clear_cache()
         except Exception as e:
             self.mostra_stato_file("error", str(e)[:50])
             self.mostra_errore_verifica(str(e))
 
-    def crea_expander_firma(self, info, idx):
+    def _verifica_firma_pdf(self, file_pdf, data):
+        """Handle PAdES signature verification for PDF files"""
+        debug_print(f"[DEBUG] _verifica_firma_pdf: {file_pdf}")
+
+        try:
+            pdf_signatures = estrai_firme_da_pdf(data)
+        except Exception as e:
+            debug_print(f"[DEBUG] PDF signature extraction error: {e}")
+            pdf_signatures = []
+
+        if not pdf_signatures:
+            self.mostra_stato_file("error", _("No digital signature found in PDF"))
+            return
+
+        all_firme = []
+        verification_ok = True
+
+        for idx, sig in enumerate(pdf_signatures):
+            pkcs7 = sig['pkcs7_data']
+            try:
+                signature_infos = analizza_busta(pkcs7)
+                for info in signature_infos:
+                    info['tipo_firma'] = 'PAdES'
+                    info['firmatario_idx'] = idx + 1
+                    info['livello_busta'] = 1
+                    info['campo_firma'] = sig.get('name', '')
+                    all_firme.append(info)
+            except Exception as e:
+                debug_print(f"[DEBUG] Error parsing PDF signature {idx}: {e}")
+                continue
+
+            # OpenSSL verification with ByteRange
+            byte_range = sig.get('byte_range', [])
+            try:
+                content = ricostruisci_contenuto_pdf(data, byte_range)
+                if content:
+                    pkcs7_path = os.path.join(self.cache_dir, f"pdf_sig_{idx}.der")
+                    content_path = os.path.join(self.cache_dir, f"pdf_content_{idx}.bin")
+                    with open(pkcs7_path, 'wb') as f:
+                        f.write(pkcs7)
+                    with open(content_path, 'wb') as f:
+                        f.write(content)
+
+                    cmd = [
+                        "openssl", "smime", "-verify",
+                        "-in", pkcs7_path, "-inform", "DER",
+                        "-content", content_path,
+                        "-noverify", "-out", "/dev/null"
+                    ]
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                    if result.returncode != 0:
+                        verification_ok = False
+                else:
+                    verification_ok = False
+            except Exception as e:
+                debug_print(f"[DEBUG] OpenSSL verification error for sig {idx}: {e}")
+                verification_ok = False
+
+        if not all_firme:
+            self.mostra_stato_file("error", _("Could not parse signatures in PDF"))
+            return
+
+        self.pdf_data = data
+        self.pdf_signatures = pdf_signatures
+        self.all_firme = all_firme
+        self.file_estratto = file_pdf
+        self.btn_apri_estratto.set_sensitive(True)
+        self.btn_salva_estratto.set_sensitive(True)
+        self.btn_mostra_firme.set_sensitive(True)
+
+        if verification_ok:
+            self.mostra_stato_file("success", _("Verification completed successfully"))
+        else:
+            self.mostra_stato_file("info", _("Signature information extracted"))
+
+        self.mostra_info_firma(all_firme)
+
+    def crea_expander_firma(self, info):
         """Create signature expander"""
         identita = info.get(_('Identity'), _('Unknown'))
         stato = info.get(_('Certificate status'), '')
-        
+        tipo = info.get('tipo_firma', '')
+
+        tipo_badge = f'<span size="x-small" weight="bold" bgcolor="#e3f2fd" color="#1565c0"> {tipo} </span>' if tipo == 'CAdES' else \
+                     f'<span size="x-small" weight="bold" bgcolor="#f3e5f5" color="#6a1b9a"> {tipo} </span>' if tipo else ''
+
         expander = Gtk.Expander()
         expander.set_margin_top(4)
         expander.set_margin_bottom(4)
@@ -381,7 +503,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         title_label.set_halign(Gtk.Align.START)
         header_box.append(title_label)
         
-        subtitle = Gtk.Label(label=f'<span size="small" color="#666">{stato}</span>')
+        subtitle = Gtk.Label(label=f'<span size="small" color="#666">{tipo_badge} {stato}</span>')
         subtitle.set_use_markup(True)
         subtitle.set_halign(Gtk.Align.START)
         header_box.append(subtitle)
@@ -416,14 +538,22 @@ class FirmeWindow(Gtk.ApplicationWindow):
         expander.set_child(details_box)
         return expander
 
-    def mostra_info_firma(self, file_p7m):
+    def mostra_info_firma(self, firme_info):
         """Display signature information"""
         self.pulisci_listbox()
+
+        tipo = firme_info[0].get('tipo_firma', '') if firme_info else ''
+        if tipo:
+            tipo_badge = f'<span size="small" weight="bold" color="#1565c0">{tipo}</span>'
+            self.label_firme_title.set_markup(
+                f'<span size="small" weight="bold" color="#336699">{_("DIGITAL SIGNATURES:")}</span>   {tipo_badge}'
+            )
+        else:
+            self.label_firme_title.set_markup(
+                f'<span size="small" weight="bold" color="#336699">{_("DIGITAL SIGNATURES:")}</span>'
+            )
+
         try:
-            with open(file_p7m, 'rb') as f:
-                data = f.read()
-            firme_info = analizza_busta(data)
-            
             if not firme_info:
                 no_firme_label = Gtk.Label(label=f'<span size="small" color="#999">⚠️ {_("No digital signature found in file")}</span>')
                 no_firme_label.set_use_markup(True)
@@ -433,13 +563,14 @@ class FirmeWindow(Gtk.ApplicationWindow):
                 return
             
             for info in firme_info:
-                expander = self.crea_expander_firma(info, 0)
+                expander = self.crea_expander_firma(info)
                 self.firme_listbox.append(expander)
             
             # Footer
             n_signatures = len(firme_info)
             sig_word = _("signature") if n_signatures == 1 else _("signatures")
-            footer_label = Gtk.Label(label=f'<span size="small" color="#666">✓ {_("Total")}: {n_signatures} {sig_word} {_("verified")}</span>')
+            tipo_label = f' {tipo}' if tipo else ''
+            footer_label = Gtk.Label(label=f'<span size="small" color="#666">✓ {_("Total")}: {n_signatures} {sig_word}{tipo_label} {_("verified")}</span>')
             footer_label.set_use_markup(True)
             footer_label.set_margin_top(12)
             footer_label.set_margin_bottom(8)
@@ -472,7 +603,7 @@ class FirmeWindow(Gtk.ApplicationWindow):
         if errore:
             errore_pulito = errore.split('\n')[0] if '\n' in errore else errore
             if 'Error reading S/MIME message' in errore:
-                errore_pulito = _("File is not in valid P7M/CAdES format")
+                errore_pulito = _("File is not in a valid signed format")
             
             details_expander = Gtk.Expander(label=_("Technical details"))
             details_expander.set_margin_top(12)
@@ -487,6 +618,43 @@ class FirmeWindow(Gtk.ApplicationWindow):
             error_box.append(details_expander)
         
         self.firme_listbox.append(error_box)
+
+    def on_mostra_firme_clicked(self, widget):
+        """Open highlighted PDF showing signature positions"""
+        debug_print("[DEBUG] Mostra firme clicked")
+        debug_print(f"[DEBUG] pdf_data: {len(self.pdf_data) if self.pdf_data else 0} bytes")
+        debug_print(f"[DEBUG] pdf_signatures count: {len(self.pdf_signatures)}")
+        for i, s in enumerate(self.pdf_signatures):
+            debug_print(f"[DEBUG]   sig[{i}]: page={s.get('page')}, rect={s.get('rect')}, name='{s.get('name')}'")
+
+        if not self.pdf_data or not self.pdf_signatures:
+            debug_print("[DEBUG] No PDF data or signatures available")
+            return
+
+        # Also save a copy of the original PDF for comparison
+        original_path = os.path.join(self.cache_dir, "original_for_debug.pdf")
+        try:
+            with open(original_path, 'wb') as f:
+                f.write(self.pdf_data)
+        except Exception as e:
+            debug_print(f"[DEBUG] Could not save original: {e}")
+
+        highlighted = genera_pdf_evidenziato(self.pdf_data, self.pdf_signatures)
+        debug_print(f"[DEBUG] genera_pdf_evidenziato returned {len(highlighted) if highlighted else 0} bytes")
+        if not highlighted:
+            self.mostra_stato_file("error", _("Could not generate highlighted PDF"))
+            return
+
+        output_path = os.path.join(self.cache_dir, "highlighted_sigs.pdf")
+        try:
+            with open(output_path, 'wb') as f:
+                f.write(highlighted)
+            debug_print(f"[DEBUG] Saved highlighted PDF to {output_path}")
+            gfile = Gio.File.new_for_path(output_path)
+            launcher = Gtk.FileLauncher.new(gfile)
+            launcher.launch(self, None, lambda *a: None)
+        except Exception as e:
+            self.mostra_stato_file("error", str(e)[:100])
 
     def on_apri_estratto_clicked(self, widget):
         """Open extracted file with portal"""

@@ -4,21 +4,23 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   <name>P7M Viewer</name>
-  <summary>Verify and view P7M/CAdES digital signatures</summary>
-  <summary xml:lang="it">Verifica e visualizza firme digitali P7M/CAdES</summary>
+  <summary>Verify and view P7M/CAdES and PAdES digital signatures</summary>
+  <summary xml:lang="it">Verifica e visualizza firme digitali P7M/CAdES e PAdES</summary>
   
   <description>
     <p>
-      P7M Viewer is a GTK4 application for verifying and viewing digitally signed files in P7M (CAdES) format.
+      P7M Viewer is a GTK4 application for verifying and viewing digitally signed files in P7M (CAdES) and PAdES (PDF) format.
       It allows you to inspect digital signatures, extract signed documents, and verify the authenticity of signatures.
     </p>
     <p xml:lang="it">
-      P7M Viewer è un'applicazione GTK4 per verificare e visualizzare file firmati digitalmente in formato P7M (CAdES).
+      P7M Viewer è un'applicazione GTK4 per verificare e visualizzare file firmati digitalmente in formato P7M (CAdES) e PAdES (PDF).
       Permette di ispezionare le firme digitali, estrarre i documenti firmati e verificare l'autenticità delle firme.
     </p>
     <p>Features:</p>
     <p xml:lang="it">Funzionalità:</p>
     <ul>
+      <li>P7M/CAdES and PAdES (PDF) signature support</li>
+      <li xml:lang="it">Supporto firme P7M/CAdES e PAdES (PDF)</li>
       <li>Automatic format detection (Base64, DER, PEM)</li>
       <li xml:lang="it">Rilevamento automatico del formato (Base64, DER, PEM)</li>
       <li>Drag &amp; drop support</li>
@@ -27,10 +29,12 @@
       <li xml:lang="it">Supporto per firme multiple e annidate</li>
       <li>Display signer details: name, tax code (Codice Fiscale), organization</li>
       <li xml:lang="it">Visualizzazione dettagli firmatario: nome, Codice Fiscale, organizzazione</li>
-      <li>Certificate validity verification</li>
-      <li xml:lang="it">Verifica validità certificato</li>
-      <li>Timestamp verification (signature valid at signing time)</li>
-      <li xml:lang="it">Verifica timestamp (firma valida al momento della sottoscrizione)</li>
+      <li>Visual signature highlighting in PDF</li>
+      <li xml:lang="it">Evidenziazione visiva firme nel PDF</li>
+      <li>Signature type indicator (CAdES/PAdES)</li>
+      <li xml:lang="it">Indicatore del tipo di firma (CAdES/PAdES)</li>
+      <li>Certificate validity and timestamp verification</li>
+      <li xml:lang="it">Verifica validità certificato e timestamp</li>
       <li>Extract and open the original signed document</li>
       <li xml:lang="it">Estrazione e apertura del documento originale firmato</li>
     </ul>
@@ -67,6 +71,26 @@
   </screenshots>
   
   <releases>
+    <release version="1.2.0" date="2026-06-18">
+      <description>
+        <p>Release 1.2.0</p>
+        <p xml:lang="it">Versione 1.2.0</p>
+        <ul>
+          <li>Added PAdES (PDF) signature support</li>
+          <li xml:lang="it">Aggiunto supporto firme PAdES (PDF)</li>
+          <li>Visual signature highlighting in PDF</li>
+          <li xml:lang="it">Evidenziazione visiva firme nel PDF</li>
+          <li>Signature type badge (CAdES/PAdES) in the UI</li>
+          <li xml:lang="it">Badge del tipo di firma (CAdES/PAdES) nell'interfaccia</li>
+          <li>Improved OpenSSL error handling and timeout protection</li>
+          <li xml:lang="it">Migliorata gestione errori OpenSSL e protezione timeout</li>
+          <li>Automatic PKCS7 format detection (DER/PEM/Base64)</li>
+          <li xml:lang="it">Rilevamento automatico formato PKCS7 (DER/PEM/Base64)</li>
+          <li>Updated translations (it, fr, es, de)</li>
+          <li xml:lang="it">Traduzioni aggiornate (it, fr, es, de)</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.1.1" date="2025-12-08">
       <description>
         <p>Release 1.1.1</p>

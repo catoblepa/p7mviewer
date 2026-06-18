@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**P7M Viewer** is a GTK4 application for GNOME that verifies and displays digitally signed files in `.p7m` (CAdES) format. Built with Python 3.8+, GTK4, PyGObject, OpenSSL, and asn1crypto.
+**P7M Viewer** is a GTK4 application for GNOME that verifies and displays digitally signed files in `.p7m` (CAdES) and `.pdf` (PAdES) formats. Built with Python 3.8+, GTK4, PyGObject, OpenSSL, asn1crypto, and pypdf.
 
 - **App ID:** `io.github.catoblepa.p7mviewer`
 - **License:** GPL-3.0-or-later
@@ -22,12 +22,21 @@ src/
 └── *.svg                 # Application icon
 ```
 
-### Data Flow
+### Data Flow (P7M / CAdES)
 
 1. User drops/selects `.p7m` file
 2. `p7mviewer.py` calls `signature_parser.analizza_busta()` to parse certificates/signers
 3. `p7mviewer.py` uses `openssl smime -verify` to verify signatures and extract original document
 4. Results displayed in expandable UI rows with signer details
+
+### Data Flow (PAdES / PDF)
+
+1. User drops/selects `.pdf` file
+2. `p7mviewer.py` detects PDF magic bytes (`%PDF`)
+3. `signature_parser.estrai_firme_da_pdf()` extracts PKCS#7 blobs from signature fields using pypdf
+4. Each blob is parsed with `analizza_busta()` for signer info
+5. `openssl smime -verify` verifies against reconstructed content (ByteRange)
+6. The PDF itself is the extracted document (no extraction needed)
 
 ## Key Files
 
@@ -49,7 +58,7 @@ sudo apt install python3-gi python3-pip openssl libgirepository1.0-dev
 
 # Python dependencies
 pip install -r requirements.txt
-# Or: pip install pygobject asn1crypto==1.5.1
+# Or: pip install pygobject asn1crypto==1.5.1 pypdf
 ```
 
 ### Run Locally
@@ -107,8 +116,12 @@ python3 src/p7mviewer.py
 ## Known Limitations
 
 - Requires OpenSSL CLI for verification (not pure Python)
-- Certificate chain validation uses `-noverify` (trusts embedded certs)
+- Certificate chain validation uses `-noverify` (trusts embedded certs from the P7M envelope, no CRL/OCSP check)
 - Cache directory cleaned on window close: `~/.cache/p7mviewer/`
+- OpenSSL subprocess has a 30-second timeout; very large files may time out
+- Base64-encoded P7M files are decoded to DER before OpenSSL verification
+- PAdES verification uses reconstructed content from `/ByteRange`; some PDF implementations may use non-standard ByteRange layouts
+- Requires `pypdf` library for PDF parsing; if missing, PAdES support is unavailable
 
 ## Project Structure Details
 
@@ -120,6 +133,8 @@ python3 src/p7mviewer.py
 - `rileva_formato_p7m()` - Detects Base64/DER/PEM
 - `analizza_busta()` - Recursive envelope parsing
 - `mostra_info_firma()` - Extracts signer details from certificate
+- `estrai_firme_da_pdf()` - Extracts PAdES signatures from PDF via pypdf
+- `ricostruisci_contenuto_pdf()` - Reconstructs signed PDF content from ByteRange
 
 ## Internationalization
 
