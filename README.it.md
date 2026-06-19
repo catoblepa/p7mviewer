@@ -1,19 +1,23 @@
 # P7M Viewer
 
-**P7M Viewer** è una semplice applicazione GTK4 per GNOME che permette di verificare file firmati digitalmente in formato `.p7m` (CAdES) e visualizzare i dettagli delle firme digitali contenute.
+**P7M Viewer** è una semplice applicazione GTK4 per GNOME che permette di verificare file firmati digitalmente in formato `.p7m` (CAdES) e `.pdf` (PAdES) e visualizzare i dettagli delle firme digitali contenute.
 
 ## Funzionalità
 
-- **Verifica file .p7m**
-Apertura e controllo della validità delle firme digitali tramite OpenSSL.
+- **Verifica file .p7m (CAdES) e .pdf (PAdES)**
+Apertura e controllo della validità delle firme digitali tramite parsing ASN.1 (`asn1crypto`) e OpenSSL (per verifica byte range PAdES).
+- **Evidenziazione visiva firme nei PDF**
+Mostra rettangoli gialli e label in corrispondenza delle firme nel PDF.
+- **Indicatore tipo firma**
+Badge che mostra il tipo di firma (CAdES/PAdES) nell'interfaccia.
 - **Supporto multi-formato**
 Gestione automatica di P7M in Base64, DER e PEM.
 - **Dettagli firmatari completi**
 Nome, Codice Fiscale, Organizzazione, validità certificato, data firma e verifica al momento della sottoscrizione.
 - **Firme multiple e annidate**
-Supporto completo per buste firmate complesse.
+Supporto completo per buste firmate complesse, incluse catene `.p7m.p7m`.
 - **Estrazione documento originale**
-Recupero e apertura del file contenuto nel pacchetto firmato.
+Recupero e apertura del file contenuto nel pacchetto firmato. Estrazione automatica multi-livello.
 - **Interfaccia GTK4 moderna**
 Design intuitivo con drag \& drop nativo.
 

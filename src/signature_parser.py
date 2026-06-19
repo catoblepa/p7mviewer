@@ -187,6 +187,33 @@ def analizza_busta(data, livello=1):
         pass
     return risultati
 
+def estrai_contenuto_p7m(data, livello=1):
+    """
+    Extract the original content from a CMS/PKCS7 SignedData envelope.
+    Returns the raw bytes of the encapsulated content, or None on failure.
+    Handles DER, PEM and Base64 formats (via rileva_formato_p7m at level 1).
+    """
+    try:
+        if livello == 1:
+            formato, data_convertita = rileva_formato_p7m(data)
+            debug_print(f"[DEBUG] estrai_contenuto_p7m: formato={formato}, input_size={len(data)}, converted_size={len(data_convertita)}")
+            data = data_convertita
+        content_info = cms.ContentInfo.load(data)
+        if content_info['content_type'].native == 'signed_data':
+            signed_data = content_info['content']
+            encap_content = signed_data['encap_content_info']['content']
+            if encap_content is not None:
+                result = encap_content.native
+                debug_print(f"[DEBUG] estrai_contenuto_p7m: extracted {len(result)} bytes at livello={livello}")
+                return result
+            else:
+                debug_print(f"[DEBUG] estrai_contenuto_p7m: no encapsulated content (detached), livello={livello}")
+        else:
+            debug_print(f"[DEBUG] estrai_contenuto_p7m: not signed_data (content_type={content_info['content_type'].native})")
+    except Exception as e:
+        debug_print(f"[DEBUG] estrai_contenuto_p7m: exception at livello={livello}: {e}")
+    return None
+
 def stampa_risultati(risultati):
     for info in risultati:
         print(f"\n--- Firmatario {info.get('firmatario_idx', '?')} (Livello busta {info.get('livello_busta', '?')}) ---")
@@ -280,6 +307,10 @@ def ricostruisci_contenuto_pdf(pdf_data, byte_range):
     except IndexError:
         return None
 
+def _escape_pdf_text(s):
+    """Escape special characters for PDF string literals."""
+    return s.replace('\\', '\\\\').replace('(', '\\(').replace(')', '\\)')
+
 def genera_pdf_evidenziato(pdf_data, firme_info):
     """
     Create a new PDF with highlighted rectangles over signature areas.
@@ -330,11 +361,12 @@ def genera_pdf_evidenziato(pdf_data, firme_info):
 
                 # Label text
                 label = sig.get('name', '') or sig.get(_('Identity'), '') or _('PAdES Signature')
+                label_escaped = _escape_pdf_text(label)
                 overlay_ops += (
                     b'q\n'
                     b'/DeviceRGB cs\n'
                     b'0.2 0.2 0.2 rg\n'
-                    + f'/Helvetica 8 Tf\n{x1} {y2 + 3} Td\n({label}) Tj\n'.encode()
+                    + f'/Helvetica 8 Tf\n{x1} {y2 + 3} Td\n({label_escaped}) Tj\n'.encode()
                     + b'Q\n'
                 )
 

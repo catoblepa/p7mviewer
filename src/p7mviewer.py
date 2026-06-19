@@ -12,8 +12,9 @@ from pathlib import Path
 import gettext
 import locale
 import shutil
+import uuid
 
-from signature_parser import analizza_busta, rileva_formato_p7m, estrai_firme_da_pdf, ricostruisci_contenuto_pdf, genera_pdf_evidenziato
+from signature_parser import analizza_busta, estrai_firme_da_pdf, ricostruisci_contenuto_pdf, genera_pdf_evidenziato, estrai_contenuto_p7m
 
 # Setup localization
 APP_ID = "io.github.catoblepa.p7mviewer"
@@ -66,7 +67,8 @@ class FirmeWindow(Gtk.ApplicationWindow):
         self.file_estratto = None
         self.file_verificato = False
         self.file_p7m_corrente = None
-        self.cache_dir = os.path.join(GLib.get_user_cache_dir(), 'p7mviewer')
+        self.window_id = uuid.uuid4().hex[:8]
+        self.cache_dir = os.path.join(GLib.get_user_cache_dir(), 'p7mviewer', self.window_id)
         self.pdf_data = None
         self.pdf_signatures = []
         self.all_firme = []
@@ -348,47 +350,44 @@ class FirmeWindow(Gtk.ApplicationWindow):
                 self.mostra_stato_file("error", _("No digital signature found in file"))
                 return
             
-            base_name = base_path.stem if base_path.suffix.lower() == '.p7m' else base_path.name
+            while base_path.suffix.lower() == '.p7m':
+                base_path = base_path.with_suffix('')
+            base_name = base_path.name
             final_output_path = os.path.join(self.cache_dir, base_name)
             
-            # Detect format for OpenSSL
-            openssl_inform = "DER"
-            file_corrente = file_p7m
-            formato, data_decodificata = rileva_formato_p7m(data)
-            if formato == "pem":
-                openssl_inform = "PEM"
-            elif formato == "base64":
-                temp_der = os.path.join(self.cache_dir, f"{base_name}_decoded.der")
-                with open(temp_der, 'wb') as f:
-                    f.write(data_decodificata)
-                file_corrente = temp_der
-            
-            # Extract signatures recursively
+            # Extract signatures recursively using asn1crypto
             max_livello = max(info.get('livello_busta', 1) for info in firme_info)
+            debug_print(f"[DEBUG] max_livello={max_livello}")
+            current_data = data
 
             for livello in range(1, max_livello + 1):
-                # Use a temporary name for intermediate files
                 if livello < max_livello:
                     file_output = os.path.join(self.cache_dir, f"{base_name}_level{livello}")
                 else:
                     file_output = final_output_path
 
-                cmd = [
-                    "openssl", "smime", "-verify",
-                    "-in", file_corrente, "-inform", openssl_inform,
-                    "-noverify", "-out", file_output
-                ]
-                
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-                if result.returncode != 0:
+                debug_print(f"[DEBUG] Extraction level {livello}/{max_livello}: input {len(current_data)} bytes")
+                contenuto = estrai_contenuto_p7m(current_data)
+                if contenuto is None:
+                    debug_print(f"[DEBUG] Extraction failed at level {livello}")
                     self.mostra_stato_file("error", _("Verification error"))
-                    self.mostra_errore_verifica(result.stderr)
+                    self.mostra_errore_verifica(_("Unable to extract content from P7M"))
                     self._clear_cache()
                     return
-                
-                # Subsequent levels always use DER (openssl output)
-                openssl_inform = "DER"
-                file_corrente = file_output
+
+                debug_print(f"[DEBUG] Extraction level {livello}: output {len(contenuto)} bytes -> {file_output}")
+                with open(file_output, 'wb') as f:
+                    f.write(contenuto)
+
+                current_data = contenuto
+            
+            # Clean up intermediate level files
+            for livello in range(1, max_livello):
+                intermediate = os.path.join(self.cache_dir, f"{base_name}_level{livello}")
+                try:
+                    os.remove(intermediate)
+                except OSError:
+                    pass
             
             # Success
             self.file_estratto = final_output_path
@@ -416,6 +415,9 @@ class FirmeWindow(Gtk.ApplicationWindow):
             pdf_signatures = []
 
         if not pdf_signatures:
+            self.file_estratto = file_pdf
+            self.btn_apri_estratto.set_sensitive(True)
+            self.btn_salva_estratto.set_sensitive(True)
             self.mostra_stato_file("error", _("No digital signature found in PDF"))
             return
 
@@ -464,6 +466,9 @@ class FirmeWindow(Gtk.ApplicationWindow):
                 verification_ok = False
 
         if not all_firme:
+            self.file_estratto = file_pdf
+            self.btn_apri_estratto.set_sensitive(True)
+            self.btn_salva_estratto.set_sensitive(True)
             self.mostra_stato_file("error", _("Could not parse signatures in PDF"))
             return
 
@@ -730,11 +735,11 @@ class FirmeWindow(Gtk.ApplicationWindow):
             self.mostra_stato_file("error", _("Error opening save dialog"))
 
     def on_destroy(self, widget):
-        """Clear cache on exit"""
+        """Clear per-window cache on window close"""
         self._clear_cache()
 
     def _clear_cache(self):
-        """Remove all files in the cache directory"""
+        """Remove all files in this window's cache directory"""
         debug_print(f"[DEBUG] Clearing cache directory: {self.cache_dir}")
         if os.path.exists(self.cache_dir):
             try:

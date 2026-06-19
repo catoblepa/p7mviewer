@@ -5,9 +5,9 @@
 ## Main Features
 
 - **.p7m (CAdES) and .pdf (PAdES) file verification**
-Opens and checks digital signature validity using OpenSSL.
+Opens and checks digital signature validity using ASN.1 parsing (`asn1crypto`) and OpenSSL (for PAdES byte range verification).
 - **Visual signature highlighting in PDF**
-Displays yellow highlight rectangles at signature positions in the PDF.
+Displays yellow highlight rectangles and labels at signature positions in the PDF.
 - **Signature type indicator**
 Badge showing the signature type (CAdES/PAdES) in the UI.
 - **Multi-format support**
@@ -15,9 +15,9 @@ Automatic handling of P7M files in Base64, DER, and PEM formats.
 - **Complete signer details**
 Name, Tax Code, Organization, certificate validity, signature date, and verification at signing time.
 - **Multiple and nested signatures**
-Full support for complex signed envelopes.
+Full support for complex signed envelopes, including `.p7m.p7m` nested chains.
 - **Extract original document**
-Retrieve and open the file contained in the signed package.
+Retrieve and open the file contained in the signed package. Handles multi-level extraction automatically.
 - **Modern GTK4 interface**
 Intuitive design with native drag \& drop.
 

@@ -79,9 +79,13 @@ msgstr "Nessun file selezionato"
 msgid "No digital signature found in file"
 msgstr "Nessuna firma digitale trovata nel file"
 
-#: p7mviewer.py:384
+#: p7mviewer.py:373
 msgid "Verification error"
 msgstr "Errore nella verifica"
+
+#: p7mviewer.py:374
+msgid "Unable to extract content from P7M"
+msgstr "Impossibile estrarre il contenuto dal file P7M"
 
 #: p7mviewer.py:397 p7mviewer.py:479
 msgid "Verification completed successfully"
