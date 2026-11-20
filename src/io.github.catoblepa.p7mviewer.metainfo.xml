@@ -71,6 +71,20 @@
   </screenshots>
   
   <releases>
+    <release version="1.2.1" date="2026-06-19">
+      <description>
+        <p>Release 1.2.1</p>
+        <p xml:lang="it">Versione 1.2.1</p>
+        <ul>
+          <li>Document content extraction now uses asn1crypto</li>
+          <li xml:lang="it">L'estrazione del contenuto del documento ora usa asn1crypto</li>
+          <li>Support for nested P7M envelopes</li>
+          <li xml:lang="it">Supporto per buste P7M annidate</li>
+          <li>Cache is now per window</li>
+          <li xml:lang="it">La cache ora è per finestra</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.2.0" date="2026-06-18">
       <description>
         <p>Release 1.2.0</p>
