@@ -48,6 +48,8 @@ src/
 | `Makefile` | Installation rules |
 | `requirements.txt` | Python dependencies |
 | `.github/workflows/flatpak.yml` | CI/CD for Flatpak builds |
+| `.github/workflows/update-sources.yml` | Weekly Flatpak source updates (external data checker) |
+| `.github/dependabot.yml` | Weekly GitHub Actions updates |
 
 ## Development Setup
 
@@ -97,6 +99,7 @@ flatpak-builder --user --install --force-clean build-dir io.github.catoblepa.p7m
 1. Update version in `metainfo.xml` `<release>` section
 2. Tag release: `git tag v<version>`
 3. GitHub Actions builds Flatpak automatically
+4. Flathub's external data checker opens a PR in the Flathub repo pointing at the new tag
 
 ## Testing
 
@@ -146,5 +149,10 @@ Supported: Italian (default), French, Spanish, German.
 
 GitHub Actions (`.github/workflows/flatpak.yml`):
 - Triggers on push to main, PR, tags `v*`
-- Builds Flatpak using `flatpak/flatpak-github-actions`
+- Builds inside the `ghcr.io/flathub-infra/flatpak-github-actions:gnome-51` container, which must match `runtime-version`
 - Uploads artifact and attaches to GitHub Release on tag push
+
+Automated maintenance:
+- `.github/dependabot.yml` bumps the GitHub Actions weekly, grouped in one PR
+- `.github/workflows/update-sources.yml` runs flatpak-external-data-checker weekly; sources with `x-checker-data` (asn1crypto, pypdf) get update PRs
+- The Flathub manifest (`flathub/io.github.catoblepa.p7mviewer`) is covered by Flathub's global checker, which also follows app releases (`is-main-source`)
