@@ -71,6 +71,20 @@
   </screenshots>
   
   <releases>
+    <release version="1.3.0" date="2026-11-21">
+      <description>
+        <p>Release 1.3.0</p>
+        <p xml:lang="it">Versione 1.3.0</p>
+        <ul>
+          <li>PAdES (PDF) signature support is now available in the Flatpak build</li>
+          <li xml:lang="it">Il supporto alle firme PAdES (PDF) ora è disponibile anche nel pacchetto Flatpak</li>
+          <li>Updated pypdf to 7.1.1</li>
+          <li xml:lang="it">Aggiornato pypdf alla 7.1.1</li>
+          <li>Flatpak runtime updated to GNOME 51</li>
+          <li xml:lang="it">Runtime Flatpak aggiornato a GNOME 51</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.2.1" date="2026-06-19">
       <description>
         <p>Release 1.2.1</p>
