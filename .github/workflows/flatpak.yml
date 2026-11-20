@@ -13,24 +13,20 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
+      options: --privileged
+
     steps:
       - uses: actions/checkout@v5
-
-      - name: Install Flatpak and flatpak-builder
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y flatpak flatpak-builder
-
-      - name: Add Flathub repository
-        run: |
-          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-          sudo flatpak install -y flathub org.gnome.Platform//49 org.gnome.Sdk//49
 
       - name: Build Flatpak
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           manifest-path: io.github.catoblepa.p7mviewer.yaml
           bundle: io.github.catoblepa.p7mviewer.flatpak
+          cache: true
+          cache-key: flatpak-builder-${{ github.sha }}
 
       - name: Upload Flatpak bundle as artifact
         uses: actions/upload-artifact@v5
